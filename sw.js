@@ -4,7 +4,7 @@
   - Resto de archivos: primero el caché, para abrir rápido sin señal.
   Al cambiar archivos, sube CACHE_VERSION.
 */
-const CACHE_VERSION = 'campo-v9';
+const CACHE_VERSION = 'campo-v10';
 
 const ARCHIVOS = [
   './',
@@ -19,8 +19,9 @@ const ARCHIVOS = [
   'cosecha.html',
   'recomendacion.html',
   'clima.html',
-  'asistente.html',
   'aprender.html',
+  'css/movil.css',
+  'js/aprender.js',
   'js/almacen.js',
   'js/parcela-datos.js',
   'js/ruta.js',
@@ -28,11 +29,9 @@ const ARCHIVOS = [
   'js/motor.js',
   'js/clima.js',
   'js/resumen.js',
-  'js/zonas.js',
   'js/explica.js',
   'js/ubicacion.js',
   'js/ubicar.chacra.js',
-  'js/asistente.js',
   'data/cultivos.json',
   'data/zonas.json'
 ];
