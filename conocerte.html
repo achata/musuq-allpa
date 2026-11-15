@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#24523a">
+<title>Campaña pasada · campo</title>
+<script src="js/almacen.js"></script>
+<script src="js/ruta.js"></script>
+<script>
+  if (!Almacen.activa()) location.replace('ubicar-chacra.html');
+</script>
+<style>
+  :root{--verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee; --texto:#1d2b22; --gris:#5f6b63; --borde:#cfd8d1}
+  *{box-sizing:border-box}
+  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:19px; background:var(--fondo); color:var(--texto); padding:20px 16px 150px; min-height:100dvh}
+  main{max-width:480px; margin:0 auto}
+  .progreso{font-size:15px; color:var(--gris); font-weight:700; letter-spacing:.04em}
+  h1{font-size:28px; line-height:1.25; margin:8px 0 6px}
+  .texto{color:var(--gris); line-height:1.5; margin:0 0 18px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .tarjeta{background:#fff; border:2px solid var(--borde); border-radius:18px; padding:14px 10px; text-align:center; cursor:pointer; min-height:140px; font:inherit; color:var(--texto)}
+  .tarjeta .ico{font-size:44px; display:block}
+  .tarjeta .nom{font-size:20px; font-weight:800; display:block; margin-top:6px}
+  .tarjeta .desc{font-size:14px; color:var(--gris); display:block; margin-top:4px; line-height:1.3}
+  .tarjeta.sel{border-color:var(--verde); background:var(--verde-claro)}
+  .bloque{background:#fff; border:1px solid var(--borde); border-radius:16px; padding:14px; margin-top:14px}
+  .bloque p{font-weight:800; margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{font:inherit; font-size:18px; padding:10px 16px; min-height:52px; border-radius:999px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer}
+  .chip.on{background:var(--verde); color:#fff}
+  .barra{position:fixed; left:0; right:0; bottom:0; background:var(--fondo); padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--borde)}
+  .barra .c{max-width:480px; margin:0 auto; display:grid; gap:8px}
+  .principal{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
+  .secundario{font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer; width:100%}
+</style>
+</head>
+<body>
+<main>
+  <div class="progreso">PASO 2 DE 5</div>
+  <h1>¿Qué sembraste en tu parcela la campaña pasada?</h1>
+  <p class="texto">Toca lo que sembraste. Puedes elegir más de uno. Así no repetimos el mismo cultivo y la tierra descansa.</p>
+  <div class="grid" id="grid"></div>
+  <div id="variedades"></div>
+</main>
+
+<div class="barra">
+  <div class="c">
+    <button class="principal" id="btnSiguiente">Siguiente →</button>
+    <button class="secundario" id="btnNada">No sé o no sembré nada</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let catalogo = [];
+const sel = {};
+
+function render(){
+  $('grid').innerHTML = catalogo.map(c => `
+    <button class="tarjeta ${c.id in sel ? 'sel' : ''}" data-id="${c.id}">
+      <span class="ico">${c.icono}</span>
+      <span class="nom">${c.nombre}</span>
+      <span class="desc">${c.desc}</span>
+    </button>`).join('');
+
+  $('variedades').innerHTML = Object.keys(sel).map(id => {
+    const c = catalogo.find(x => x.id === id);
+    if (!c || !c.variedades || !c.variedades.length) return '';
+    return `<div class="bloque">
+      <p>¿Qué tipo de ${c.nombre.toLowerCase()} sembraste?</p>
+      <div class="chips">
+        ${[...c.variedades, 'No sé'].map(v => `<button class="chip ${sel[id] === v ? 'on' : ''}" data-cultivo="${id}" data-variedad="${v}">${v}</button>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function guardar(lista){
+  Ruta.guardarBorrador({ cultivos: lista });
+  location.href = 'riego.html';
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('.tarjeta');
+  if (t) {
+    const id = t.dataset.id;
+    if (id in sel) delete sel[id]; else sel[id] = 'No sé';
+    render(); return;
+  }
+  const chip = e.target.closest('.chip');
+  if (chip) { sel[chip.dataset.cultivo] = chip.dataset.variedad; render(); }
+});
+
+$('btnSiguiente').onclick = () => {
+  guardar(Object.keys(sel).map(id => {
+    const c = catalogo.find(x => x.id === id);
+    return { id, nombre: c ? c.nombre : id, variedad: sel[id] };
+  }));
+};
+$('btnNada').onclick = () => guardar([]);
+
+(async () => {
+  catalogo = await (await fetch('data/cultivos.json')).json();
+  const previa = (Almacen.borrador() || {}).cultivos || [];
+  previa.forEach(c => { sel[c.id] = c.variedad || 'No sé'; });
+  render();
+})();
+</script>
+</body>
+</html>

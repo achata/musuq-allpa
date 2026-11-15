@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#24523a">
+<title>¿Cuándo quieres cosechar? · campo</title>
+<script src="js/almacen.js"></script>
+<script src="js/ruta.js"></script>
+<script>
+  const b = Almacen.borrador() || {};
+  if (!Almacen.activa()) location.replace('ubicar-chacra.html');
+  else if (!b.cultivos) location.replace('conocerte.html');
+  else if (!b.riego) location.replace('riego.html');
+  else if (!b.insumos) location.replace('insumos.html');
+</script>
+<style>
+  :root{--verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee; --texto:#1d2b22; --gris:#5f6b63; --borde:#cfd8d1}
+  *{box-sizing:border-box}
+  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:19px; background:var(--fondo); color:var(--texto); padding:20px 16px 150px; min-height:100dvh}
+  main{max-width:480px; margin:0 auto}
+  .progreso{font-size:15px; color:var(--gris); font-weight:700; letter-spacing:.04em}
+  h1{font-size:28px; line-height:1.25; margin:8px 0 6px}
+  .texto{color:var(--gris); line-height:1.5; margin:0 0 18px}
+  .meses{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .mes{font:inherit; font-weight:800; min-height:64px; border-radius:16px; border:2px solid var(--borde); background:#fff; color:var(--texto); cursor:pointer}
+  .mes.on{background:var(--verde); border-color:var(--verde); color:#fff}
+  .ayuda{font-size:16px; color:var(--gris); margin-top:14px; line-height:1.4}
+  .barra{position:fixed; left:0; right:0; bottom:0; background:var(--fondo); padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--borde)}
+  .barra .c{max-width:480px; margin:0 auto; display:grid; gap:8px}
+  .principal{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
+  .secundario{font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer; width:100%}
+</style>
+</head>
+<body>
+<main>
+  <div class="progreso">PASO 5 DE 5</div>
+  <h1>¿Cuándo quieres tener tu cosecha?</h1>
+  <p class="texto">Toca los meses en que te gustaría cosechar. Si todavía no lo sabes, toca "No sé todavía".</p>
+  <div class="meses" id="meses"></div>
+  <p class="ayuda" id="ayuda"></p>
+</main>
+
+<div class="barra">
+  <div class="c">
+    <button class="principal" id="btnCrear">✅ Crear mi parcela</button>
+    <button class="secundario" id="btnNo">No sé todavía</button>
+  </div>
+</div>
+
+<script>
+const NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const seleccion = new Set();
+
+function render(){
+  document.getElementById('meses').innerHTML = NOMBRES.map((n, i) =>
+    `<button class="mes ${seleccion.has(i + 1) ? 'on' : ''}" data-m="${i + 1}">${n}</button>`).join('');
+  const txt = seleccion.size
+    ? `Elegiste ${seleccion.size} mes(es) de cosecha. Te diremos cuándo sembrar para tenerla.`
+    : 'Si no eliges meses, te recomendamos los mejores cultivos sin pensar en la fecha de cosecha.';
+  document.getElementById('ayuda').textContent = txt;
+}
+
+document.getElementById('meses').addEventListener('click', e => {
+  const b = e.target.closest('.mes');
+  if (!b) return;
+  const m = +b.dataset.m;
+  seleccion.has(m) ? seleccion.delete(m) : seleccion.add(m);
+  render();
+});
+
+function crear(cosecha){
+  const b = Almacen.borrador() || {};
+  Almacen.guardarPerfilActivo({
+    cultivos: b.cultivos || [],
+    riego: b.riego,
+    insumos: b.insumos || [],
+    cosecha: cosecha.sort((x, y) => x - y)
+  });
+  Almacen.borrarBorrador();
+  location.href = 'index.html';
+}
+
+document.getElementById('btnCrear').onclick = () => crear([...seleccion]);
+document.getElementById('btnNo').onclick = () => crear([]);
+render();
+</script>
+</body>
+</html>

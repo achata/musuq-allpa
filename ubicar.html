@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24523a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Probar ubicación · campo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="js/ubicacion.js"></script>
+<script src="js/motor.js"></script>
+<style>
+  :root{
+    --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
+    --texto:#1d2b22; --gris:#5f6b63; --borde:#cfd8d1;
+    --aviso:#fdf1e4; --aviso-txt:#8a4a06;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; background:var(--fondo); color:var(--texto);
+    padding:16px 14px 40px;
+  }
+  main{max-width:640px; margin:0 auto}
+  h1{font-size:24px; margin:4px 0 6px; color:var(--verde)}
+  h2{font-size:19px; margin:22px 0 8px}
+  .ayuda{color:var(--gris); margin:0 0 14px; line-height:1.4}
+  input, select, textarea{font-size:16px}
+  body{min-height:100dvh}
+
+  label{display:block; font-weight:700; margin:12px 0 6px}
+  input,select{
+    width:100%; font:inherit; min-height:48px; padding:8px 12px;
+    border:2px solid var(--borde); border-radius:12px; background:#fff; color:var(--texto);
+  }
+  #sugerencias{list-style:none; margin:4px 0 0; padding:0; background:#fff; border:1px solid var(--borde); border-radius:12px; overflow:hidden}
+  #sugerencias li{padding:12px; border-bottom:1px solid var(--borde); cursor:pointer}
+  #sugerencias li:last-child{border-bottom:none}
+  #sugerencias li:hover{background:var(--verde-claro)}
+  #sugerencias li.vacio{color:var(--gris); cursor:default; background:#fff}
+
+  #mapa{height:300px; border-radius:14px; margin:12px 0 8px; border:1px solid var(--borde)}
+  .fila{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
+  #coords{font-weight:700; color:var(--verde)}
+
+  .grupo{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  button{
+    font:inherit; font-weight:700; min-height:50px; padding:0 16px; border-radius:14px;
+    border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%; margin-top:12px;
+  }
+  button.sec{width:auto; margin-top:0; background:#fff; color:var(--verde); min-height:44px}
+  button:disabled{opacity:.45; cursor:not-allowed}
+
+  .datos{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .dato{background:#fff; border:1px solid var(--borde); border-radius:14px; padding:12px}
+  .dato strong{display:block; font-size:14px; color:var(--gris)}
+  .dato .valor{display:block; font-size:22px; font-weight:800; margin:2px 0}
+  .dato small{color:var(--gris); line-height:1.35; display:block}
+
+  .aviso{background:var(--aviso); color:var(--aviso-txt); border-radius:14px; padding:14px; line-height:1.45}
+  table{width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; font-size:15px}
+  th,td{padding:8px 6px; text-align:center; border-bottom:1px solid var(--borde)}
+  th:first-child,td:first-child{text-align:left}
+  .nota{color:var(--gris); font-size:14px; line-height:1.4}
+
+  @media(max-width:520px){ .datos,.grupo{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<main>
+  <h1>Probar una ubicación</h1>
+  <p class="ayuda">Pantalla de pruebas. Busca un lugar, toca el mapa o usa tu GPS, y revisa los datos y su exactitud. No cambia la parcela real del agricultor.</p>
+
+  <label for="buscar">Buscar lugar en Perú</label>
+  <input id="buscar" type="search" placeholder="Escribe: Huamancaca, Puno, Chancay…" autocomplete="off">
+  <ul id="sugerencias"></ul>
+
+  <div id="mapa"></div>
+  <div class="fila">
+    <span id="coords">Sin punto todavía. Toca el mapa.</span>
+    <button id="btnGps" class="sec">📍 Usar mi GPS</button>
+  </div>
+
+  <div class="grupo">
+    <div>
+      <label for="selRiego">Riego</label>
+      <select id="selRiego">
+        <option value="secano">Solo lluvia</option>
+        <option value="riego">Con riego</option>
+      </select>
+    </div>
+    <div>
+      <label for="selInsumos">Insumos</label>
+      <select id="selInsumos">
+        <option value="bajo">Pocos o ninguno</option>
+        <option value="medio">Guano, abono o pesticida</option>
+      </select>
+    </div>
+  </div>
+
+  <button id="btnProbar" disabled>Consultar NASA y calcular</button>
+
+  <section id="resultado"></section>
+</main>
+<script src="js/ubicar.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24523a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Mi parcela · campo</title>
+<script src="js/almacen.js"></script>
+<script src="js/ruta.js"></script>
+<script>
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id || !Almacen.todas().some(p => p.id === id)) {
+    location.replace('index.html');
+  } else {
+    Almacen.activar(id);
+  }
+</script>
+<style>
+  :root{--verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee; --texto:#1d2b22; --gris:#5f6b63; --borde:#e5e2da}
+  *{box-sizing:border-box}
+  body{margin:0; min-height:100vh; min-height:100dvh; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:19px; background:var(--fondo); color:var(--texto); padding-bottom:env(safe-area-inset-bottom)}
+  header{background:#fff; border-bottom:1px solid var(--borde); padding:12px 16px; padding-top:calc(12px + env(safe-area-inset-top)); display:flex; align-items:center; gap:10px}
+  header a{font-size:17px; font-weight:800; color:var(--verde); text-decoration:none; min-height:44px; display:flex; align-items:center}
+  main{max-width:480px; margin:0 auto; padding:20px 16px 40px}
+  .nombre{font-size:30px; font-weight:800; color:var(--verde); line-height:1.2; margin:4px 0 6px; word-break:break-word}
+  .resumen{color:var(--gris); line-height:1.45; margin:0 0 20px}
+  .accion{
+    display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--texto);
+    background:#fff; border:2px solid var(--borde); border-radius:20px;
+    padding:18px; margin-bottom:14px; min-height:96px;
+  }
+  .accion .ico{width:60px; height:60px; border-radius:16px; background:var(--verde-claro); display:grid; place-items:center; font-size:32px; flex-shrink:0}
+  .accion .t{display:block; font-size:22px; font-weight:800; color:var(--verde)}
+  .accion .d{display:block; font-size:16px; color:var(--gris); margin-top:3px; line-height:1.3}
+  .accion.secundaria{min-height:72px; padding:14px 18px}
+  .accion.secundaria .ico{width:48px; height:48px; font-size:24px}
+  .accion.secundaria .t{font-size:19px}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html">← Mis parcelas</a>
+</header>
+
+<main id="contenido"></main>
+
+<script>
+(function(){
+  const p = Almacen.activa();
+
+  // Si la parcela no está completa, se retoma el registro en el paso que falta
+  if (!p || !p.perfil) {
+    location.replace(Ruta.paso() || 'index.html');
+    return;
+  }
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  const cultivos = (p.perfil.cultivos || []).map(c => c.nombre);
+  const cultivosTxt = cultivos.length ? cultivos.join(', ') : 'Sin cultivos registrados';
+
+  document.getElementById('contenido').innerHTML = `
+    <div class="nombre">${esc(p.nombre)}</div>
+    <p class="resumen">${esc(p.altitud ?? '--')} metros de altura · ${esc(cultivosTxt)}</p>
+
+    <a class="accion" href="recomendacion.html">
+      <span class="ico">🌱</span>
+      <span>
+        <span class="t">¿Qué siembro?</span>
+        <span class="d">Te decimos qué sembrar y cuándo</span>
+      </span>
+    </a>
+
+    <a class="accion" href="clima.html">
+      <span class="ico">🌞</span>
+      <span>
+        <span class="t">Mi campo hoy</span>
+        <span class="d">El clima y el estado de tu tierra</span>
+      </span>
+    </a>
+
+    <a class="accion" href="aprender.html">
+      <span class="ico">📖</span>
+      <span>
+        <span class="t">Aprender</span>
+        <span class="d">Consejos para cuidar esta parcela</span>
+      </span>
+    </a>
+
+    <a class="accion secundaria" href="mi-campo.html">
+      <span class="ico">✏️</span>
+      <span>
+        <span class="t">Editar parcela</span>
+        <span class="d">Cambia cultivos, riego o insumos</span>
+      </span>
+    </a>
+  `;
+})();
+</script>
+</body>
+</html>

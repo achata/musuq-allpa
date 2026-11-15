@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24523a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Ubica tu parcela · campo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="js/almacen.js"></script>
+<script src="js/parcela-datos.js"></script>
+<script src="js/ruta.js"></script>
+<script src="js/ubicacion.js"></script>
+<style>
+  :root{
+    --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
+    --texto:#1d2b22; --gris:#5f6b63; --borde:#cfd8d1;
+    --aviso:#fdf1e4; --aviso-txt:#8a4a06;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; height:100%}
+  body{
+    display:flex; flex-direction:column; height:100vh;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:19px; background:var(--fondo); color:var(--texto);
+  }
+
+  header{padding:14px 16px 10px; padding-top:calc(14px + env(safe-area-inset-top)); background:#fff; border-bottom:1px solid var(--borde)}
+  .paso{font-size:14px; font-weight:800; color:var(--gris); letter-spacing:.04em}
+  h1{font-size:26px; line-height:1.2; margin:4px 0 4px; color:var(--verde)}
+  #ayuda{margin:0; color:var(--gris); line-height:1.4; font-size:17px}
+
+  .mapa-wrap{position:relative; flex:1; min-height:200px}
+  #mapa{position:absolute; inset:0}
+  [hidden]{display:none!important}
+
+  .selector{
+    flex:1; overflow:auto; padding:22px 16px;
+  }
+  .selector-contenido{max-width:560px; margin:0 auto}
+  .selector h2{font-size:21px; line-height:1.25; color:var(--verde); margin:0 0 8px}
+  .selector .intro{color:var(--gris); line-height:1.45; margin:0 0 18px}
+  .opcion-ubicacion{
+    display:flex; align-items:center; gap:14px; width:100%; min-height:84px;
+    padding:14px; margin:0 0 14px; text-align:left; font:inherit; color:var(--texto);
+    background:#fff; border:2px solid var(--borde); border-radius:18px; cursor:pointer;
+  }
+  .opcion-ubicacion:focus-visible,.resultado:focus-visible{outline:3px solid #6aa886; outline-offset:2px}
+  .opcion-ubicacion .icono{
+    display:grid; place-items:center; width:52px; height:52px; flex:none;
+    border-radius:15px; background:var(--verde-claro); font-size:27px;
+  }
+  .opcion-ubicacion .texto{display:block}
+  .opcion-ubicacion strong{display:block; color:var(--verde); font-size:18px}
+  .opcion-ubicacion small{display:block; margin-top:3px; color:var(--gris); font-size:15px; line-height:1.3}
+  .buscador{padding:15px; background:#fff; border:1px solid var(--borde); border-radius:18px}
+  .buscador label{display:block; margin-bottom:8px; color:var(--verde); font-weight:800}
+  .buscador input{
+    width:100%; min-height:52px; padding:10px 12px; font:inherit; font-size:16px;
+    color:var(--texto); background:#fff; border:2px solid var(--borde); border-radius:12px;
+  }
+  .buscador input:focus{outline:3px solid #c9e2d3; border-color:var(--verde)}
+  .ayuda-busqueda{margin:8px 0 0; color:var(--gris); font-size:14px; line-height:1.4}
+  #sugerencias{list-style:none; margin:8px 0 0; padding:0}
+  #sugerencias li{margin-top:6px}
+  #sugerencias button{
+    width:100%; min-height:48px; padding:10px 12px; text-align:left; font:inherit; font-size:16px;
+    color:var(--texto); background:#fff; border:1px solid var(--borde); border-radius:11px; cursor:pointer;
+  }
+  #sugerencias button:hover{background:var(--verde-claro); border-color:var(--verde)}
+  #sugerencias .sin-resultados{padding:10px 2px; color:var(--gris); font-size:15px; line-height:1.4}
+  .cambiar{
+    display:block; margin:10px auto 0; min-height:44px; padding:6px 12px;
+    font:inherit; font-size:15px; font-weight:700; color:var(--verde);
+    background:transparent; border:0; cursor:pointer;
+  }
+
+  /* Pin fijo en el centro: la punta queda exactamente sobre el centro del mapa */
+  .pin{
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%,-100%);
+    font-size:46px; line-height:1; pointer-events:none; z-index:500;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.35));
+  }
+
+  .gps{
+    position:absolute; top:12px; right:12px; z-index:600;
+    font:inherit; font-weight:700; font-size:16px; min-height:48px; padding:0 14px;
+    border-radius:14px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer;
+  }
+  .gps:disabled{opacity:.5}
+
+  footer{
+    background:#fff; border-top:1px solid var(--borde);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .estado{
+    min-height:0; margin:0 0 10px; line-height:1.4;
+  }
+  .estado:empty{display:none}
+  .estado.info{background:var(--verde-claro); color:var(--verde); border-radius:14px; padding:12px 14px; font-weight:700}
+  .estado.aviso{background:var(--aviso); color:var(--aviso-txt); border-radius:14px; padding:12px 14px}
+
+  .confirmar{
+    font:inherit; font-weight:800; width:100%; min-height:60px;
+    border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer;
+  }
+  .confirmar:disabled{opacity:.5; cursor:wait}
+  input, select, textarea{font-size:16px}
+  body{min-height:100dvh}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="paso">PASO 1 DE 4</div>
+  <h1>¿Dónde está tu parcela?</h1>
+  <p id="ayuda">Elige cómo quieres encontrarla.</p>
+</header>
+
+<section id="selectorUbicacion" class="selector">
+  <div class="selector-contenido">
+    <h2>Elige la forma más fácil para ti</h2>
+    <p class="intro">Puedes usar la ubicación de tu celular o buscar tu comunidad, distrito o provincia por nombre.</p>
+
+    <button id="btnGpsInicial" class="opcion-ubicacion" type="button">
+      <span class="icono">📍</span>
+      <span class="texto">
+        <strong>Usar mi GPS</strong>
+        <small>Ubicaremos el punto donde estás. Necesitas permitir el acceso a tu ubicación.</small>
+      </span>
+    </button>
+    <p id="avisoGps" class="ayuda-busqueda" hidden></p>
+
+    <div class="buscador">
+      <label for="buscar">O escribe el nombre de tu ubicación</label>
+      <input id="buscar" type="search" placeholder="Ej.: Huamancaca, Puno, Chancay…" autocomplete="off" aria-controls="sugerencias">
+      <p class="ayuda-busqueda">Escribe al menos 2 letras. Te mostraremos varias localidades mientras escribes; elige una para revisar el punto en el mapa.</p>
+      <ul id="sugerencias" aria-live="polite"></ul>
+    </div>
+  </div>
+</section>
+
+<div id="mapaVista" class="mapa-wrap" hidden>
+  <div id="mapa"></div>
+  <div class="pin" aria-hidden="true">📍</div>
+  <button id="btnGps" class="gps">📍 Usar mi GPS</button>
+</div>
+
+<footer id="pieMapa" hidden>
+  <div id="estado" class="estado"></div>
+  <button id="btnConfirmar" class="confirmar">✅ Esta es mi parcela</button>
+  <button id="btnCambiar" class="cambiar" type="button">← Elegir otra forma de ubicarme</button>
+</footer>
+
+<script src="js/ubicar.chacra.js"></script>
+</body>
+</html>

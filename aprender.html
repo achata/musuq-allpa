@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#24523a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Aprender — Campo</title>
+  <link rel="stylesheet" href="css/movil.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand-link" href="menu.html"><span aria-hidden="true">🌿</span> campo</a>
+    <a class="header-link" href="menu.html">Menú</a>
+  </header>
+  <main class="page-main">
+    <p class="eyebrow">Aprender con tu campo</p>
+    <h1>Consejos prácticos</h1>
+    <p class="intro">Lee o escucha ideas sencillas para cuidar tu parcela.</p>
+    <section class="lesson-list" aria-label="Consejos">
+      <article class="content-card lesson-card">
+        <h2>¿Qué significa un milímetro de lluvia?</h2>
+        <p>Un milímetro de lluvia equivale aproximadamente a un litro de agua repartido en cada metro cuadrado. Compara la lluvia registrada con la humedad de tu suelo antes de decidir si necesitas regar.</p>
+        <button class="secondary-button" type="button" data-speak>Escuchar consejo</button>
+      </article>
+      <article class="content-card lesson-card">
+        <h2>¿Por qué importa la altitud?</h2>
+        <p>La altitud influye en la temperatura y en el riesgo de heladas. Usa la altura de tu distrito como referencia y observa también las condiciones de tu propio lote.</p>
+        <button class="secondary-button" type="button" data-speak>Escuchar consejo</button>
+      </article>
+      <article class="content-card lesson-card">
+        <h2>Rotación de cultivos</h2>
+        <p>Alternar cultivos ayuda a cuidar el suelo y reducir problemas que se acumulan al repetir una misma familia de plantas. Confirma la rotación recomendada para tu parcela con asesoría local.</p>
+        <button class="secondary-button" type="button" data-speak>Escuchar consejo</button>
+      </article>
+    </section>
+    <p id="audio-status" class="notice" role="status" hidden></p>
+  </main>
+  <script src="js/aprender.js"></script>
+</body>
+</html>

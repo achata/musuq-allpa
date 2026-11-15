@@ -1,0 +1,221 @@
+  <!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#24523a">
+<title>¿Qué siembro? · campo</title>
+<script src="js/almacen.js"></script>
+<script src="js/parcela-datos.js"></script>
+<script src="js/ruta.js"></script>
+<script src="js/ciclo.js"></script>
+<script src="js/motor.js"></script>
+<script src="js/clima.js"></script>
+<script src="js/explica.js"></script>
+<script>
+  if (!Almacen.activa()) location.replace('ubicar-chacra.html');
+  else if (!Almacen.perfilActivo()) location.replace('index.html');
+</script>
+<style>
+  :root{--verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee; --texto:#1d2b22; --gris:#5f6b63; --borde:#e5e2da; --aviso:#fdf1e4; --aviso-txt:#8a4a06}
+  *{box-sizing:border-box}
+  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:19px; background:var(--fondo); color:var(--texto); padding:20px 16px 40px; min-height:100dvh}
+  main{max-width:480px; margin:0 auto}
+  .kicker{font-size:15px; font-weight:800; color:var(--verde); letter-spacing:.05em}
+  h1{font-size:28px; margin:6px 0 14px}
+  .tarjeta{background:#fff; border:1px solid var(--borde); border-radius:20px; padding:20px; margin-bottom:16px}
+  .principal{background:var(--verde-claro); border-color:#cfe0d4}
+  .etiqueta{font-size:14px; font-weight:800; color:var(--verde); letter-spacing:.04em; margin:0 0 6px}
+  .nombre{font-size:34px; font-weight:800; color:var(--verde); line-height:1.15; margin:0 0 6px}
+  .estrellas{font-size:24px; letter-spacing:2px; margin:0 0 8px}
+  h3{font-size:19px; margin:18px 0 8px}
+  .texto{margin:0; line-height:1.45}
+  .res{font-weight:700; margin:8px 0 0}
+  .nota{font-size:15px; color:var(--gris); margin:6px 0 0}
+  .linea{display:grid; grid-template-columns:repeat(12,1fr); gap:3px; margin:8px 0 4px}
+  .linea .c{height:26px; border-radius:6px; background:#f0efea; border:1px solid #e0ddd3}
+  .linea .c.s{background:var(--verde); border-color:var(--verde)}
+  .linea .c.g{background:#c9e2d3; border-color:#b2d4c0}
+  .linea .c.h{background:#e9a43a; border-color:#d18d24}
+  .lineaMeses{display:grid; grid-template-columns:repeat(12,1fr); gap:3px; font-size:11px; color:var(--gris); text-align:center; margin-bottom:10px}
+  .leyenda{font-size:14px; color:var(--gris); line-height:1.5}
+  .escuchar{font:inherit; font-weight:800; width:100%; min-height:56px; margin-top:16px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer}
+  .escuchar[hidden]{display:none}
+  h2{font-size:21px; margin:24px 0 10px}
+  .otra{background:#fff; border:1px solid var(--borde); border-radius:16px; padding:14px 16px; margin-bottom:10px}
+  .otra .nom{font-size:20px; font-weight:800}
+  .otra .est{font-size:16px; margin-top:4px}
+  .otra .cos{font-size:16px; color:var(--gris); margin-top:2px}
+  .aviso{background:var(--aviso); color:var(--aviso-txt); border-radius:16px; padding:14px 16px; margin-bottom:10px; line-height:1.45}
+  details{background:#fff; border:1px solid var(--borde); border-radius:14px; padding:12px 14px; margin-top:12px}
+  summary{font-size:17px; font-weight:800; color:var(--verde); cursor:pointer; min-height:44px; display:flex; align-items:center}
+  details ul{margin:8px 0 0; padding-left:22px; line-height:1.5; font-size:16px}
+  .volver{font:inherit; font-weight:800; width:100%; min-height:60px; margin-top:14px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">¿QUÉ SIEMBRO?</div>
+  <h1>Para tu parcela</h1>
+  <div id="contenido"></div>
+  <button class="volver" onclick="location.href='index.html'">← Volver al menú</button>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'];
+const ABREV = ['E','F','M','A','M','J','J','A','S','O','N','D'];
+const RIEGO_A_MOTOR = { lluvia:'secano', manguera:'riego', aspersor:'riego', goteo:'riego' };
+
+const media = a => { const v = a.filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
+const lista = m => {
+  const n = (m || []).map(i => MESES_L[i - 1]);
+  if (!n.length) return 'todavía no tenemos fechas';
+  if (n.length === 1) return n[0];
+  return n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1];
+};
+const estrellas = n => '⭐'.repeat(n) + '☆'.repeat(5 - n);
+
+function lineaHTML(c){
+  const L = Ciclo.linea(c);
+  const celdas = Array.from({length:12}, (_, i) => {
+    const m = i + 1;
+    let clase = '';
+    if (L.siembra.includes(m)) clase = 's';
+    else if (L.cosecha.includes(m)) clase = 'h';
+    else if (L.crecimiento.includes(m)) clase = 'g';
+    return `<div class="c ${clase}"></div>`;
+  }).join('');
+  const meses = ABREV.map(a => `<div>${a}</div>`).join('');
+  return `<div class="linea">${celdas}</div><div class="lineaMeses">${meses}</div>`;
+}
+
+function resumenCiclo(c){
+  const L = Ciclo.linea(c);
+  if (L.perenne) return `Cosecha todos los años en ${lista(c.cosecha)}. Se siembra una vez.`;
+  return `Siembra en ${lista(L.siembra)}. Cosecha unos ${L.duracion} meses después, en ${lista(L.cosecha)}.`;
+}
+
+function climaDeLaParcela(){
+  const c = Clima.leerCache();
+  if (!c || !c.dias || !c.dias.length) return null;
+  const u = c.dias.slice(-5);
+  return {
+    tmed: media(u.map(d => d.tmed)),
+    tmin: media(u.map(d => d.tmin)),
+    lluviaMax: Math.max(0, ...u.map(d => d.lluvia ?? 0)),
+    hr: media(u.map(d => d.hr))
+  };
+}
+
+function pintar(r, entrada){
+  const cont = $('contenido');
+  const avisosHTML = r.advertencias.map(a => `<div class="aviso">${a}</div>`).join('');
+  const descartadosHTML = r.descartados.length ? `
+    <details>
+      <summary>¿Por qué no salen otros cultivos?</summary>
+      <ul>${r.descartados.slice(0, 10).map(d => `<li><strong>${d.nombre}:</strong> ${d.motivo}</li>`).join('')}</ul>
+    </details>` : '';
+
+  if (r.sinOpciones) {
+    const msg = {
+      cosecha: 'Ningún cultivo de nuestra lista se cosecha en los meses que elegiste. Prueba con otros meses.',
+      restricciones: 'Ningún cultivo llega a 4 estrellas con los datos de tu parcela. Estas son las opciones más cercanas y lo que limita cada una.'
+    }[r.motivoSinOpciones] || 'Con los datos de tu parcela, todavía no podemos recomendar con seguridad.';
+    const cercanasHTML = r.cercanas.map(c => `
+      <div class="otra">
+        <div class="nom">${c.icono} ${c.nombre}</div>
+        <div class="est">${estrellas(c.estrellas)} · ${c.estado}</div>
+        <div class="cos">${c.cumplidos} de ${c.evaluados} criterios revisados</div>
+        ${c.avisos.map(a => `<div class="cos">· ${a}</div>`).join('')}
+      </div>`).join('');
+    cont.innerHTML = `<div class="aviso">${msg}</div>${cercanasHTML}${avisosHTML}${descartadosHTML}`;
+    return;
+  }
+
+  const [p, ...resto] = r.recomendaciones;
+  const t = Explica.de(p.nombre);
+
+  let html = `
+    <div class="tarjeta principal">
+      <p class="etiqueta">TE RECOMENDAMOS SEMBRAR</p>
+      <div class="nombre">${p.icono} ${p.nombre}</div>
+      <p class="estrellas">${estrellas(p.estrellas)}</p>
+      <p class="res">${p.estado} · ${p.cumplidos} de ${p.evaluados} criterios revisados</p>
+
+      <h3>📅 Línea de tiempo</h3>
+      ${lineaHTML(p)}
+      <p class="res">${resumenCiclo(p)}</p>
+      <p class="leyenda">■ verde: siembra · □ claro: crecimiento · ■ naranja: cosecha</p>
+
+      <h3>🔁 Para cuidar la tierra</h3>
+      <p class="texto">${p.rot}</p>
+
+      <h3>💡 Un consejo</h3>
+      <p class="texto">${t.consejo}</p>
+
+      <button class="escuchar" id="btnVoz">🔊 Escuchar</button>
+    </div>`;
+
+  if (resto.length) {
+    html += `<h2>También puedes probar</h2>` + resto.map(o => `
+      <div class="otra">
+        <div class="nom">${o.icono} ${o.nombre}</div>
+        <div class="est">${estrellas(o.estrellas)}</div>
+        <div class="cos">${resumenCiclo(o)}</div>
+      </div>`).join('');
+  }
+
+  if (r.advertencias.length) html += `<h2>Para tener en cuenta</h2>` + avisosHTML;
+  html += descartadosHTML;
+  cont.innerHTML = html;
+
+  const btn = $('btnVoz');
+  if ('speechSynthesis' in window) {
+    btn.onclick = () => {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(
+        `Te recomendamos ${p.nombre}. ${resumenCiclo(p)} ${p.rot}`);
+      u.lang = 'es-PE';
+      u.rate = 0.85;
+      speechSynthesis.speak(u);
+    };
+  } else {
+    btn.hidden = true;
+  }
+}
+
+async function iniciar(){
+  const p = Almacen.activa();
+  const perfil = p.perfil;
+  const cultivos = await (await fetch('data/cultivos.json')).json();
+
+  const anteriores = (perfil.cultivos || [])
+    .map(c => (cultivos.find(x => x.id === c.id) || cultivos.find(x => x.nombre === c.nombre) || {}).familia)
+    .filter(Boolean);
+
+  const cl = climaDeLaParcela();
+  const entrada = {
+    altitud: p.altitud,
+    clima: cl || { tmed: null, tmin: null, lluviaMax: null, hr: null },
+    suelo: p.suelo || null,
+    pendientePct: p.pendientePct ?? null,
+    respuestas: {
+      riego: RIEGO_A_MOTOR[perfil.riego] || 'secano',
+      insumos: (perfil.insumos || []).some(i => i === 'abono' || i === 'pesticida') ? 'medio' : 'bajo',
+      cosecha: perfil.cosecha || [],
+      anteriores
+    }
+  };
+
+  const r = Motor.recomendar(entrada, cultivos);
+  pintar(r, entrada);
+}
+
+iniciar().catch(() => {
+  $('contenido').innerHTML = '<div class="aviso">No pudimos preparar tu recomendación. Revisa que la app esté abierta desde Live Server o desde internet.</div>';
+});
+</script>
+</body>
+</html>

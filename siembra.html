@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24523a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>¿Qué siembro? · campo</title>
+<style>
+  :root{
+    --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
+    --texto:#1d2b22; --gris:#5f6b63; --aviso:#fdf1e4; --aviso-txt:#8a4a06;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:19px; background:var(--fondo); color:var(--texto);
+    padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  }
+  main{max-width:480px; margin:0 auto; padding-top:20px}
+  .progreso{font-size:15px; color:var(--gris); font-weight:600; letter-spacing:.04em}
+  h1{font-size:30px; line-height:1.2; margin:8px 0 10px}
+  .texto{color:var(--gris); line-height:1.5; margin:0 0 20px}
+  button{
+    font:inherit; font-weight:700; width:100%; min-height:64px;
+    border-radius:16px; border:2px solid var(--verde); cursor:pointer;
+    background:var(--verde); color:#fff; padding:14px 18px;
+  }
+  button:disabled{opacity:.5; cursor:wait}
+  button.secundario{background:#fff; color:var(--verde); margin-top:12px}
+  .pequeno{font-size:16px; color:var(--gris); margin-top:12px; line-height:1.4}
+  .aviso{
+    background:var(--aviso); color:var(--aviso-txt); border-radius:14px;
+    padding:14px 16px; margin-top:16px; line-height:1.4; display:none;
+  }
+  .ok{
+    background:var(--verde-claro); color:var(--verde); border-radius:14px;
+    padding:16px; margin-top:16px; line-height:1.5; display:none; font-weight:600;
+  }
+  .oculto{display:none}
+  input, select, textarea{font-size:16px}
+  body{min-height:100dvh}
+</style>
+</head>
+<body>
+<main>
+  <div class="progreso">PASO 1 DE 5</div>
+  <h1>Bienvenido a tu campo</h1>
+  <p class="texto">Vamos a conocer tu terreno. Solo toma un minuto.</p>
+
+  <button id="btnUbicacion">📍 Activar mi ubicación</button>
+  <p class="pequeno">Usamos tu ubicación para saber a qué altura está tu campo y qué clima tiene tu zona. Se guarda una sola vez.</p>
+
+  <div id="aviso" class="aviso"></div>
+
+  <div id="listo" class="ok">
+    ✅ Listo. Tu terreno está a <span id="altTxt"></span> de altura.
+  </div>
+
+  <button id="btnSiguiente" class="oculto" style="margin-top:20px">Siguiente →</button>
+</main>
+
+<script src="js/ubicacion.js"></script>
+<script>
+const MENSAJES = {
+  PERMISO_NEGADO: 'Sin permiso no podemos saber dónde está tu campo. Permite la ubicación en la configuración de tu celular y vuelve a tocar el botón.',
+  TIEMPO_AGOTADO: 'No encontramos tu ubicación. Sal al aire libre, espera unos segundos y vuelve a tocar el botón.',
+  PRECISION_BAJA: 'La ubicación no es lo bastante exacta. Ponte en el centro de tu terreno, al aire libre, y vuelve a intentar.',
+  SIN_SOPORTE:    'Tu celular no permite usar la ubicación en esta página.',
+  NO_DISPONIBLE:  'No pudimos obtener tu ubicación. Revisa que el GPS esté prendido.',
+  ALTITUD_FALLA:  'Sin internet no podemos calcular la altura de tu campo. Intenta de nuevo cuando tengas señal.'
+};
+
+const $ = id => document.getElementById(id);
+
+function mostrarAviso(texto){
+  $('aviso').textContent = texto;
+  $('aviso').style.display = texto ? 'block' : 'none';
+}
+
+function mostrarListo(parcela){
+  $('altTxt').textContent = parcela.altitud + ' msnm';
+  $('listo').style.display = 'block';
+  $('btnUbicacion').textContent = '✅ Ubicación guardada';
+  $('btnUbicacion').disabled = true;
+  $('btnSiguiente').classList.remove('oculto');
+}
+
+// Si ya hay ubicación guardada, no vuelve a pedirla
+const guardada = localStorage.getItem('parcela');
+if (guardada) mostrarListo(JSON.parse(guardada));
+
+$('btnUbicacion').addEventListener('click', async () => {
+  const btn = $('btnUbicacion');
+  mostrarAviso('');
+  btn.disabled = true;
+  btn.textContent = 'Buscando tu ubicación…';
+  try {
+    const parcela = await Ubicacion.activar();
+    localStorage.setItem('parcela', JSON.stringify(parcela));
+    mostrarListo(parcela);
+  } catch (e) {
+    mostrarAviso(MENSAJES[e.message] || 'Algo salió mal. Intenta de nuevo.');
+    btn.disabled = false;
+    btn.textContent = '📍 Activar mi ubicación';
+  }
+});
+
+$('btnSiguiente').addEventListener('click', () => {
+  // Paso 2 (¿Qué cultivas?) se construye en el siguiente cambio
+  alert('Este paso llega en el siguiente cambio.');
+});
+</script>
+</body>
+</html>

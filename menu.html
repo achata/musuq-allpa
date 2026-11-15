@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24523a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>campo · Cultiva con confianza</title>
+<script src="js/almacen.js"></script>
+<script src="js/ruta.js"></script>
+<script>
+  // Si falta la ubicación o el perfil, va primero allí
+  const destino = Ruta.paso();
+  if (destino) location.replace(destino);
+</script>
+<style>
+  :root{
+    --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
+    --texto:#1d2b22; --gris:#5f6b63; --borde:#e5e2da;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:19px; background:var(--fondo); color:var(--texto);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  header{
+    background:#fff; border-bottom:1px solid var(--borde);
+    padding:14px 16px; padding-top:calc(14px + env(safe-area-inset-top));
+    font-size:24px; font-weight:800; color:var(--verde);
+  }
+  header a{color:inherit; text-decoration:none}
+  main{max-width:480px; margin:0 auto; padding:24px 16px}
+  .kicker{font-size:14px; font-weight:800; color:var(--verde); letter-spacing:.06em}
+  h1{font-size:30px; line-height:1.2; margin:6px 0 6px}
+  .sub{color:var(--gris); margin:0 0 22px; line-height:1.4}
+
+  .opcion{
+    display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--texto);
+    background:#fff; border:1px solid var(--borde); border-radius:18px;
+    padding:18px; margin-bottom:14px; min-height:88px;
+  }
+  .opcion .ico{
+    width:60px; height:60px; border-radius:16px; background:var(--verde-claro);
+    display:grid; place-items:center; font-size:32px; flex-shrink:0;
+  }
+  .opcion .txt{flex:1}
+  .opcion .titulo{font-size:22px; font-weight:800; color:var(--verde); display:block}
+  .opcion .detalle{font-size:16px; color:var(--gris); display:block; margin-top:4px; line-height:1.3}
+  .opcion .flecha{font-size:26px; color:var(--verde)}
+  input, select, textarea{font-size:16px}
+  body{min-height:100dvh}
+</style>
+</head>
+<body>
+
+<header><a href="menu.html">🌿 campo</a></header>
+
+<main>
+  <div class="kicker">CULTIVA CON CONFIANZA</div>
+  <h1>¿Qué necesitas hoy?</h1>
+  <p class="sub">Herramientas sencillas para tomar decisiones en tu campo.</p>
+
+  <a class="opcion" href="recomendacion.html">
+    <span class="ico">🌱</span>
+    <span class="txt">
+      <span class="titulo">¿Qué siembro?</span>
+      <span class="detalle">Recibe una recomendación para tu parcela</span>
+    </span>
+    <span class="flecha">→</span>
+  </a>
+
+  <a class="opcion" href="clima.html">
+    <span class="ico">🌞</span>
+    <span class="txt">
+      <span class="titulo">Mi campo hoy</span>
+      <span class="detalle">Consulta el clima y la altitud de tu zona</span>
+    </span>
+    <span class="flecha">→</span>
+  </a>
+
+  <a class="opcion" href="mi-campo.html">
+    <span class="ico">🗺️</span>
+    <span class="txt">
+      <span class="titulo">Mi parcela</span>
+      <span class="detalle">Cambia tus datos, agrega otra parcela o cambia de parcela</span>
+    </span>
+    <span class="flecha">→</span>
+  </a>
+
+  <a class="opcion" href="aprender.html">
+    <span class="ico">📖</span>
+    <span class="txt">
+      <span class="titulo">Aprender</span>
+      <span class="detalle">Consejos prácticos para cuidar tus cultivos</span>
+    </span>
+    <span class="flecha">→</span>
+  </a>
+</main>
+
+</body>
+</html>

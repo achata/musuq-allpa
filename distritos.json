@@ -1,0 +1,32 @@
+[
+  {
+    "id": "huamancaca-chico",
+    "nombre": "Huamancaca Chico",
+    "provincia": "Chupaca",
+    "departamento": "Junín",
+    "altitudMsnm": 3186,
+    "latitud": -12.0814375,
+    "longitud": -75.2433443,
+    "fuente": "https://es.wikipedia.org/wiki/Distrito_de_Huamancaca_Chico"
+  },
+  {
+    "id": "puno",
+    "nombre": "Puno",
+    "provincia": "Puno",
+    "departamento": "Puno",
+    "altitudMsnm": 3827,
+    "latitud": -15.839632,
+    "longitud": -70.021528,
+    "fuente": "https://es.wikipedia.org/wiki/Distrito_de_Puno"
+  },
+  {
+    "id": "chancay",
+    "nombre": "Chancay",
+    "provincia": "Huaral",
+    "departamento": "Lima",
+    "altitudMsnm": 44,
+    "latitud": -11.568577777778,
+    "longitud": -77.269655555556,
+    "fuente": "https://es.wikipedia.org/wiki/Distrito_de_Chancay_(Huaral)"
+  }
+]

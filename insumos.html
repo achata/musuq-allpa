@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#24523a">
+<title>¿Qué usas en tu parcela? · campo</title>
+<script src="js/almacen.js"></script>
+<script src="js/ruta.js"></script>
+<script>
+  const borradorInicial = Almacen.borrador() || {};
+  if (!Almacen.activa()) location.replace('ubicar-chacra.html');
+  else if (!borradorInicial.cultivos) location.replace('conocerte.html');
+  else if (!borradorInicial.riego) location.replace('riego.html');
+</script>
+<style>
+  :root{--verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee; --texto:#1d2b22; --gris:#5f6b63; --borde:#cfd8d1}
+  *{box-sizing:border-box}
+  body{margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:19px; background:var(--fondo); color:var(--texto); padding:20px 16px 150px; min-height:100dvh}
+  main{max-width:480px; margin:0 auto}
+  .progreso{font-size:15px; color:var(--gris); font-weight:700; letter-spacing:.04em}
+  h1{font-size:28px; line-height:1.25; margin:8px 0 6px}
+  .texto{color:var(--gris); line-height:1.5; margin:0 0 18px}
+  .lista{display:grid; gap:12px}
+  .opcion{display:flex; align-items:center; gap:14px; text-align:left; font:inherit; color:var(--texto); background:#fff; border:2px solid var(--borde); border-radius:18px; padding:16px; min-height:96px; cursor:pointer}
+  .opcion .ico{font-size:40px; flex-shrink:0}
+  .opcion .nom{display:block; font-size:21px; font-weight:800}
+  .opcion .desc{display:block; font-size:16px; color:var(--gris); margin-top:4px; line-height:1.35}
+  .opcion.sel{border-color:var(--verde); background:var(--verde-claro)}
+  .barra{position:fixed; left:0; right:0; bottom:0; background:var(--fondo); padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--borde)}
+  .barra .c{max-width:480px; margin:0 auto; display:grid; gap:8px}
+  .atras{font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer; width:100%}
+  .siguiente{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
+  .siguiente:disabled{opacity:.4}
+</style>
+</head>
+<body>
+<main>
+  <div class="progreso">PASO 4 DE 5</div>
+  <h1>¿Qué usas en tu parcela?</h1>
+  <p class="texto">Puedes elegir varios. Si no usas nada, toca Ninguno.</p>
+  <div class="lista" id="lista"></div>
+</main>
+
+<div class="barra">
+  <div class="c">
+    <button class="siguiente" id="btnSiguiente" disabled>Siguiente →</button>
+    <button class="atras" onclick="history.back()">← Volver</button>
+  </div>
+</div>
+
+<script>
+const OPCIONES = [
+  { id:'guano', ico:'🐄', nom:'Guano de corral', desc:'Estiércol de animales, como vacas o cuyes.' },
+  { id:'abono', ico:'🧪', nom:'Abono de tienda', desc:'Abono comprado en la tienda agraria.' },
+  { id:'pesticida', ico:'🐛', nom:'Pesticida', desc:'Lo que usas para matar insectos o plagas. Muchos le dicen veneno.' },
+  { id:'ninguno', ico:'✋', nom:'Ninguno', desc:'No uso nada de esto.' }
+];
+
+const b = Almacen.borrador() || {};
+let elegidos = new Set(b.insumos || []);
+
+function render(){
+  document.getElementById('lista').innerHTML = OPCIONES.map(o => `
+    <button class="opcion ${elegidos.has(o.id) ? 'sel' : ''}" data-id="${o.id}">
+      <span class="ico">${o.ico}</span>
+      <span><span class="nom">${o.nom}</span><span class="desc">${o.desc}</span></span>
+    </button>`).join('');
+  document.getElementById('btnSiguiente').disabled = elegidos.size === 0;
+}
+
+document.getElementById('lista').addEventListener('click', e => {
+  const op = e.target.closest('.opcion');
+  if (!op) return;
+  const id = op.dataset.id;
+  if (id === 'ninguno') {
+    elegidos = new Set(elegidos.has('ninguno') ? [] : ['ninguno']);
+  } else {
+    elegidos.delete('ninguno');
+    elegidos.has(id) ? elegidos.delete(id) : elegidos.add(id);
+  }
+  render();
+});
+
+document.getElementById('btnSiguiente').addEventListener('click', () => {
+  Ruta.guardarBorrador({ insumos: [...elegidos] });
+  location.href = 'cosecha.html';
+});
+
+render();
+</script>
+</body>
+</html>

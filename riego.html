@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24523a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>¿Cómo riegas? · campo</title>
+<script src="js/almacen.js"></script>
+<script src="js/ruta.js"></script>
+<script>
+  if (!Ruta.leer('parcela')) location.replace('bienvenida.html');
+  else if (!(Ruta.leer('borrador') || {}).cultivos) location.replace('conocerte.html');
+</script>
+<style>
+  :root{
+    --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
+    --texto:#1d2b22; --gris:#5f6b63; --borde:#cfd8d1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    font-size:19px; background:var(--fondo); color:var(--texto);
+    padding:20px 16px 130px;
+  }
+  main{max-width:480px; margin:0 auto}
+  .progreso{font-size:15px; color:var(--gris); font-weight:700; letter-spacing:.04em}
+  h1{font-size:28px; line-height:1.25; margin:8px 0 6px}
+  .texto{color:var(--gris); line-height:1.5; margin:0 0 18px}
+
+  .lista{display:grid; gap:12px}
+  .opcion{
+    display:flex; align-items:center; gap:14px; text-align:left; font:inherit; color:var(--texto);
+    background:#fff; border:2px solid var(--borde); border-radius:18px; padding:16px;
+    min-height:96px; cursor:pointer;
+  }
+  .opcion .ico{font-size:40px; flex-shrink:0}
+  .opcion .nom{display:block; font-size:21px; font-weight:800}
+  .opcion .desc{display:block; font-size:16px; color:var(--gris); margin-top:4px; line-height:1.35}
+  .opcion.sel{border-color:var(--verde); background:var(--verde-claro)}
+
+  .barra{
+    position:fixed; left:0; right:0; bottom:0; background:var(--fondo);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--borde);
+  }
+  .barra .contenido{max-width:480px; margin:0 auto; display:grid; gap:8px}
+  .atras{
+    font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde);
+    background:#fff; color:var(--verde); cursor:pointer; width:100%;
+  }
+  .siguiente{
+    font:inherit; font-weight:700; min-height:60px; border-radius:16px; border:2px solid var(--verde);
+    background:var(--verde); color:#fff; cursor:pointer; width:100%;
+  }
+  .siguiente:disabled{opacity:.4; cursor:not-allowed}
+  input, select, textarea{font-size:16px}
+  body{min-height:100dvh}
+</style>
+</head>
+<body>
+<main>
+  <div class="progreso">PASO 3 DE 4</div>
+  <h1>¿Cómo le das agua a tu cultivo?</h1>
+  <p class="texto">Elige la forma que más se parece a lo que haces.</p>
+
+  <div class="lista" id="lista"></div>
+</main>
+
+<div class="barra">
+  <div class="contenido">
+    <button class="siguiente" id="btnSiguiente" type="button" disabled>Siguiente →</button>
+    <button class="atras" type="button" onclick="history.back()">← Volver</button>
+  </div>
+</div>
+
+<script>
+const OPCIONES = [
+  {id:'lluvia',    ico:'🌧️', nom:'Solo lluvia',       desc:'No riego. Espero que llueva.'},
+  {id:'manguera',  ico:'🪣', nom:'Manguera o canal',  desc:'Le echo agua con balde, manguera o por canal.'},
+  {id:'aspersor',  ico:'💦', nom:'Aspersor',          desc:'Tengo un aparato que riega como lluvia.'},
+  {id:'goteo',     ico:'💧', nom:'Goteo',             desc:'Tengo tubos que dan agua gota a gota, cerca de la raíz.'}
+];
+
+const b = Ruta.leer('borrador') || {};
+let elegido = b.riego || null;
+
+function render(){
+  document.getElementById('lista').innerHTML = OPCIONES.map(o => `
+    <button type="button" class="opcion ${o.id === elegido ? 'sel' : ''}" data-id="${o.id}">
+      <span class="ico">${o.ico}</span>
+      <span>
+        <span class="nom">${o.nom}</span>
+        <span class="desc">${o.desc}</span>
+      </span>
+    </button>`).join('');
+  document.getElementById('btnSiguiente').disabled = !elegido;
+}
+
+document.getElementById('lista').addEventListener('click', event => {
+  const option = event.target.closest('.opcion');
+  if (!option) return;
+  elegido = option.dataset.id;
+  render();
+});
+
+document.getElementById('btnSiguiente').addEventListener('click', () => {
+  if (!elegido) return;
+  Ruta.guardarBorrador({ riego: elegido });
+  location.href = 'insumos.html';
+});
+
+render();
+</script>
+</body>
+</html>
