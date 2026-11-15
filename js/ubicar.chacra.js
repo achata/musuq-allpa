@@ -87,7 +87,7 @@ async function buscarLugares(texto){
   ul.appendChild(cargando);
 
   try {
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(texto)}&limit=20&lang=es`;
+    const url = `/api/search?q=${encodeURIComponent(texto)}`;
     const respuesta = await fetch(url, { signal: controlBusqueda.signal });
     if (!respuesta.ok) throw new Error('Photon ' + respuesta.status);
     const datos = await respuesta.json();

@@ -79,7 +79,7 @@ function mostrarSugerencias(lugares){
 }
 
 async function buscarPhoton(texto){
-  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(texto)}&limit=8&lang=es`;
+  const url = `/api/search?q=${encodeURIComponent(texto)}`;
   const r = await fetch(url);
   if (!r.ok) throw new Error('photon ' + r.status);
   const j = await r.json();
@@ -93,7 +93,7 @@ async function buscarPhoton(texto){
 }
 
 async function buscarNominatim(texto){
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(texto + ', Perú')}&format=json&limit=8&accept-language=es`;
+  const url = `/api/search?provider=nominatim&q=${encodeURIComponent(texto)}`;
   const r = await fetch(url, { headers: { 'Accept-Language': 'es' } });
   if (!r.ok) throw new Error('nominatim ' + r.status);
   const j = await r.json();
@@ -164,36 +164,13 @@ const media = arr => {
 const aYYYYMMDD = d => d.toISOString().slice(0, 10).replace(/-/g, '');
 
 async function altitud(lat, lon){
-  const r = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`);
+  const r = await fetch(`/api/elevation?lat=${lat}&lon=${lon}`);
   if (!r.ok) throw new Error('altitud');
   const j = await r.json();
   return Math.round(j.elevation[0]);
 }
 
-async function clima(lat, lon){
-  // NASA POWER tiene unos 2 días de atraso: pedimos 7 días que terminen hace 2
-  const fin = new Date();
-  fin.setDate(fin.getDate() - 2);
-  const ini = new Date(fin);
-  ini.setDate(ini.getDate() - 6);
-
-  const url = 'https://power.larc.nasa.gov/api/temporal/daily/point'
-    + '?parameters=T2M,PRECTOTCORR,WS2M,RH2M,GWETTOP&community=AG'
-    + `&longitude=${lon}&latitude=${lat}&start=${aYYYYMMDD(ini)}&end=${aYYYYMMDD(fin)}&format=JSON`;
-
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('NASA POWER');
-  const p = (await r.json()).properties.parameter;
-
-  return Object.keys(p.T2M).sort().map(k => ({
-    fecha: k,
-    tmed: v(p.T2M[k]),
-    lluvia: v(p.PRECTOTCORR[k]),
-    viento: v(p.WS2M[k]) == null ? null : p.WS2M[k] * 3.6,
-    hr: v(p.RH2M[k]),
-    suelo: v(p.GWETTOP[k]) == null ? null : p.GWETTOP[k] * 100
-  }));
-}
+async function clima(lat, lon){ return (await CampoApi.at('climate', lat, lon)).dias; }
 
 function resumir(dias){
   const u5 = dias.slice(-5);

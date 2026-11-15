@@ -1,0 +1,51 @@
+const { chromium } = require('@playwright/test');
+const { createApp } = require('../server/app');
+const assert = require('node:assert/strict');
+(async () => {
+  const server = createApp().listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  let browser;
+  try {
+    browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    const errors = []; page.on('pageerror', e => errors.push(e.message));
+    const base = 'http://127.0.0.1:' + server.address().port;
+    await page.goto(base + '/ubicar-chacra.html');
+    await page.waitForFunction(() => window.CampoI18n?.catalog);
+    await page.locator('.campo-language').click();
+    assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+    assert.equal(await page.locator('h1').innerText(), 'Where is your plot?');
+    await page.screenshot({ path: 'test-results/location-mobile.png', fullPage: true });
+    await page.evaluate(() => {
+      Almacen.guardar({ id: 'test', nombre: 'Test', ubicacion: { lat: -12, lon: -75 }, altitud: 3200 });
+      Almacen.activar('test');
+    });
+    await page.goto(base + '/conocerte.html');
+    await page.locator('.tarjeta').first().click();
+    await page.locator('#btnSiguiente').click();
+    await page.locator('[data-id="lluvia"]').click();
+    await page.locator('.campo-back').click();
+    await page.locator('#btnSiguiente').click();
+    assert.ok((await page.locator('[data-id="lluvia"]').getAttribute('class')).includes('sel'));
+    await page.locator('#btnSiguiente').click();
+    await page.locator('[data-id="ninguno"]').click();
+    await page.locator('#btnSiguiente').click();
+    await page.locator('[data-m="5"]').click();
+    await page.locator('.campo-back').click();
+    await page.locator('#btnSiguiente').click();
+    assert.ok((await page.locator('[data-m="5"]').getAttribute('class')).includes('on'));
+    await page.locator('.campo-language').click();
+    assert.equal(await page.locator('html').getAttribute('lang'), 'qu');
+    await page.screenshot({ path: 'test-results/harvest-mobile-qu.png', fullPage: true });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.screenshot({ path: 'test-results/harvest-desktop-qu.png', fullPage: true });
+    await page.goto(base + '/parcela_neugrac_interactiva.html');
+    await page.waitForFunction(() => document.querySelector('#ma-lang')?.textContent.includes('QU'));
+    await page.locator('#ma-lang').click();
+    assert.equal(await page.locator('html').getAttribute('lang'), 'es');
+    await page.screenshot({ path: 'test-results/interactive-desktop.png', fullPage: true });
+    assert.deepEqual(errors, []);
+    console.log('Mobile Chromium: i18n, back navigation and draft restoration passed');
+  } finally { await browser?.close(); server.close(); }
+})().catch(e => { console.error(e); process.exitCode = 1; });

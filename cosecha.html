@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="js/core/api.js"></script>
+<script src="shared/domain/climate.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,6 +34,10 @@
   .principal{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
   .secundario{font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer; width:100%}
 </style>
+<link rel="stylesheet" href="css/components.css">
+<script src="js/core/i18n.js" defer></script>
+<script src="js/ui/language-switch.js" defer></script>
+<script src="js/ui/shell.js" defer></script>
 </head>
 <body>
 <main>
@@ -51,13 +57,13 @@
 
 <script>
 const NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const seleccion = new Set();
+const seleccion = new Set((Almacen.borrador() || {}).cosecha || []);
 
 function render(){
   document.getElementById('meses').innerHTML = NOMBRES.map((n, i) =>
     `<button class="mes ${seleccion.has(i + 1) ? 'on' : ''}" data-m="${i + 1}">${n}</button>`).join('');
   const txt = seleccion.size
-    ? `Elegiste ${seleccion.size} mes(es) de cosecha. Te diremos cuándo sembrar para tenerla.`
+    ? (window.CampoI18n?.catalog ? CampoI18n.t('survey.selectedMonths', { n: seleccion.size }) : `Elegiste ${seleccion.size} mes(es) de cosecha. Te diremos cuándo sembrar para tenerla.`)
     : 'Si no eliges meses, te recomendamos los mejores cultivos sin pensar en la fecha de cosecha.';
   document.getElementById('ayuda').textContent = txt;
 }
@@ -67,6 +73,7 @@ document.getElementById('meses').addEventListener('click', e => {
   if (!b) return;
   const m = +b.dataset.m;
   seleccion.has(m) ? seleccion.delete(m) : seleccion.add(m);
+  Ruta.guardarBorrador({ cosecha: [...seleccion] });
   render();
 });
 
@@ -85,6 +92,7 @@ function crear(cosecha){
 document.getElementById('btnCrear').onclick = () => crear([...seleccion]);
 document.getElementById('btnNo').onclick = () => crear([]);
 render();
+document.addEventListener('campo:language', render);
 </script>
 </body>
 </html>

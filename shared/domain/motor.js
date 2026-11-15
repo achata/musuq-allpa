@@ -6,6 +6,7 @@
   - Suelo y pendiente generan avisos, no restan puntos.
 */
 (function (root) {
+  const Ciclo = typeof module !== 'undefined' && module.exports ? require('./ciclo') : root.Ciclo;
   const NIVEL = { bajo: 0, medio: 1, alto: 2 };
   const FAMILIAS_HONGOS = ['Solanaceae', 'Lauraceae'];
   const MAX_RECOMENDACIONES = 3;
@@ -57,7 +58,8 @@
     // Altura: si está fuera de límites, el cultivo no se da en esa parcela
     const fA = trap(e.altitud, ...c.A);
     if (fA === 0) return { ...base, excluida: 'Tu parcela está fuera de la altura en que este cultivo se da bien.', excluidaPor: 'altura' };
-    criterios.push({ nombre: 'Altura', cumple: fA >= 0.7 });
+    if (fA == null) faltan.push('altitud');
+    else criterios.push({ nombre: 'Altura', cumple: fA >= 0.7 });
 
     // Temperatura media
     const fT = trap(e.clima.tmed, ...c.T);

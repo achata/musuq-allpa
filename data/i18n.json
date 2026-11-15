@@ -1,0 +1,792 @@
+{
+  "_meta": {
+    "default": "es",
+    "order": [
+      "qu",
+      "es",
+      "en"
+    ],
+    "nota": "Todos los textos de la interfaz viven aquí. Cada idioma repite las mismas claves; si falta una, se usa la de 'es'. Las llaves {d}, {t}, {n} y {w} se reemplazan en tiempo de ejecución."
+  },
+  "es": {
+    "lang": {
+      "code": "ES",
+      "name": "Español",
+      "html": "es",
+      "locale": "es-PE"
+    },
+    "brand": {
+      "name": "Musuq Allpa",
+      "mascot": "Neugrac",
+      "mascotAlt": "Neugrac, la mascota de Musuq Allpa"
+    },
+    "controls": {
+      "env": {
+        "space": "Modo espacial",
+        "field": "Modo campo",
+        "hint": "Cambiar entre espacio y campo"
+      },
+      "lang": {
+        "hint": "Cambiar idioma"
+      },
+      "role": {
+        "farmer": "Modo agricultor",
+        "agronomist": "Modo agrónomo",
+        "hint": "Cambiar entre agricultor y agrónomo"
+      },
+      "play": "Continuar",
+      "pause": "Pausar"
+    },
+    "scene": {
+      "label": "Parcela en 3D. Arrastra hacia la derecha para pasar a la siguiente fase y hacia la izquierda para volver. También puedes usar las flechas del teclado.",
+      "noGl": "No se pudo cargar la vista 3D. El resto del módulo sigue funcionando.",
+      "credit": "Imagen de la Tierra: NASA Blue Marble"
+    },
+    "timer": {
+      "label": "Avance de la campaña",
+      "day": "Día {d} de {t}",
+      "campaign": "Campaña {n}",
+      "days": "{n} días"
+    },
+    "phases": {
+      "virgin": {
+        "name": "Tierra virgen",
+        "tip": "Esta tierra todavía no ha sido trabajada. Gira la parcela hacia la derecha para empezar a arar.",
+        "note": "Sin labores registradas. Tome una muestra de suelo antes de roturar.",
+        "until": "Gira la parcela a la derecha para empezar"
+      },
+      "plow": {
+        "name": "Arar",
+        "tip": "Voltea la tierra para que respire y guarde agua.",
+        "tasks": "Roturar, mullir y nivelar; incorporar materia orgánica.",
+        "note": "Humedad adecuada para roturar. Incorpore materia orgánica y nivele antes de surcar.",
+        "until": {
+          "one": "Falta 1 día para sembrar",
+          "other": "Faltan {n} días para sembrar"
+        }
+      },
+      "sow": {
+        "name": "Siembra",
+        "tip": "Pon la semilla en el surco, ni muy hondo ni muy junto.",
+        "tasks": "Sembrar en surcos y tapar la semilla con poca tierra.",
+        "note": "Siembre con el suelo húmedo y riegue si la humedad baja de 20 %.",
+        "until": {
+          "one": "Falta 1 día para que brote",
+          "other": "Faltan {n} días para que brote"
+        }
+      },
+      "grow": {
+        "name": "Cultivo",
+        "tip": "Riega, deshierba y aporca. Cuida la planta mientras crece.",
+        "tasks": "Deshierbar, aporcar, regar y vigilar plagas.",
+        "note": "Vigile el NDVI y la humedad. Aporque antes de la floración y proteja el cultivo en noches de helada.",
+        "until": {
+          "one": "Falta 1 día para cosechar",
+          "other": "Faltan {n} días para cosechar"
+        }
+      },
+      "harvest": {
+        "name": "Cosecha",
+        "tip": "Corta, seca y guarda el grano en un lugar seco.",
+        "tasks": "Cortar, secar, trillar y almacenar.",
+        "note": "Coseche cuando el grano resista la uña y evite la lluvia durante el secado.",
+        "until": {
+          "one": "Falta 1 día para cerrar la campaña",
+          "other": "Faltan {n} días para cerrar la campaña"
+        }
+      }
+    },
+    "agro": {
+      "panel": "Datos para el agrónomo",
+      "title": "Parcela demo",
+      "simulated": "Datos simulados",
+      "simulatedNote": "Valores de ejemplo para el prototipo. En la versión real llegarán de NASA POWER (clima), SMAP (humedad del suelo), GPM IMERG (lluvia) y MODIS (NDVI).",
+      "meta": {
+        "crop": "Cultivo",
+        "cropName": "Quinua",
+        "place": "Ubicación de ejemplo",
+        "altitude": "Altitud",
+        "altUnit": "m s. n. m.",
+        "start": "Inicio de campaña"
+      },
+      "kpi": {
+        "ndvi": "Vigor del cultivo (NDVI)",
+        "sm": "Humedad del suelo",
+        "temp": "Temperatura mín. y máx.",
+        "rain": "Lluvia acumulada",
+        "rainToday": "hoy {n} mm"
+      },
+      "status": {
+        "bare": "Suelo desnudo",
+        "emerging": "Brotando",
+        "growing": "En crecimiento",
+        "peak": "Vigor alto",
+        "ripening": "Madurando",
+        "optimal": "Óptimo",
+        "low": "Bajo",
+        "high": "Alto",
+        "frost": "Riesgo de helada",
+        "noFrost": "Sin helada",
+        "waiting": "Campaña sin iniciar"
+      },
+      "charts": {
+        "ndvi": "NDVI",
+        "sm": "Humedad del suelo (% vol.)",
+        "temp": "Temperatura (°C)",
+        "rain": "Lluvia por semana (mm)",
+        "max": "máx.",
+        "min": "mín.",
+        "frost": "helada",
+        "optimal": "óptimo",
+        "day": "Día {d}",
+        "week": "Semana {w}",
+        "axis": "Día de campaña"
+      },
+      "table": {
+        "title": "Fases de la campaña",
+        "phase": "Fase",
+        "days": "Días",
+        "tasks": "Labores clave",
+        "ndvi": "NDVI medio",
+        "rain": "Lluvia (mm)",
+        "tmin": "T mín. media (°C)",
+        "tmax": "T máx. media (°C)",
+        "sm": "Humedad media (%)",
+        "state": "Estado",
+        "done": "Hecho",
+        "current": "En curso",
+        "pending": "Pendiente"
+      },
+      "soil": {
+        "title": "Análisis de suelo",
+        "texture": "Textura",
+        "textureValue": "Franco arenoso",
+        "ref": "Rango de referencia",
+        "ph": "pH",
+        "om": "Materia orgánica",
+        "n": "Nitrógeno total",
+        "p": "Fósforo disponible",
+        "k": "Potasio disponible"
+      },
+      "note": "Recomendación",
+      "json": "Registro del día (JSON)"
+    },
+    "survey": {
+      "back": "← Volver",
+      "selectedMonths": "Elegiste {n} mes(es) de cosecha. Te diremos cuándo sembrar para tenerla.",
+      "cropType": "¿Qué tipo de {crop} sembraste?",
+      "texts": {
+        "← Volver": "← Volver",
+        "¿Qué usas en tu parcela?": "¿Qué usas en tu parcela?",
+        "Puedes elegir varios. Si no usas nada, toca Ninguno.": "Puedes elegir varios. Si no usas nada, toca Ninguno.",
+        "Siguiente →": "Siguiente →",
+        "¿Dónde está tu parcela?": "¿Dónde está tu parcela?",
+        "Elige cómo quieres encontrarla.": "Elige cómo quieres encontrarla.",
+        "Elige la forma más fácil para ti": "Elige la forma más fácil para ti",
+        "Puedes usar la ubicación de tu celular o buscar tu comunidad, distrito o provincia por nombre.": "Puedes usar la ubicación de tu celular o buscar tu comunidad, distrito o provincia por nombre.",
+        "Usar mi GPS": "Usar mi GPS",
+        "📍 Usar mi GPS": "📍 Usar mi GPS",
+        "Ubicaremos el punto donde estás. Necesitas permitir el acceso a tu ubicación.": "Ubicaremos el punto donde estás. Necesitas permitir el acceso a tu ubicación.",
+        "O escribe el nombre de tu ubicación": "O escribe el nombre de tu ubicación",
+        "Escribe al menos 2 letras. Te mostraremos varias localidades mientras escribes; elige una para revisar el punto en el mapa.": "Escribe al menos 2 letras. Te mostraremos varias localidades mientras escribes; elige una para revisar el punto en el mapa.",
+        "✅ Esta es mi parcela": "✅ Esta es mi parcela",
+        "← Elegir otra forma de ubicarme": "← Elegir otra forma de ubicarme",
+        "¿Qué sembraste en tu parcela la campaña pasada?": "¿Qué sembraste en tu parcela la campaña pasada?",
+        "Toca lo que sembraste. Puedes elegir más de uno. Así no repetimos el mismo cultivo y la tierra descansa.": "Toca lo que sembraste. Puedes elegir más de uno. Así no repetimos el mismo cultivo y la tierra descansa.",
+        "No sé o no sembré nada": "No sé o no sembré nada",
+        "No sé": "No sé",
+        "¿Cómo le das agua a tu cultivo?": "¿Cómo le das agua a tu cultivo?",
+        "Elige la forma que más se parece a lo que haces.": "Elige la forma que más se parece a lo que haces.",
+        "Solo lluvia": "Solo lluvia",
+        "No riego. Espero que llueva.": "No riego. Espero que llueva.",
+        "Manguera o canal": "Manguera o canal",
+        "Le echo agua con balde, manguera o por canal.": "Le echo agua con balde, manguera o por canal.",
+        "Aspersor": "Aspersor",
+        "Tengo un aparato que riega como lluvia.": "Tengo un aparato que riega como lluvia.",
+        "Goteo": "Goteo",
+        "Tengo tubos que dan agua gota a gota, cerca de la raíz.": "Tengo tubos que dan agua gota a gota, cerca de la raíz.",
+        "Guano de corral": "Guano de corral",
+        "Estiércol de animales, como vacas o cuyes.": "Estiércol de animales, como vacas o cuyes.",
+        "Abono de tienda": "Abono de tienda",
+        "Abono comprado en la tienda agraria.": "Abono comprado en la tienda agraria.",
+        "Pesticida": "Pesticida",
+        "Lo que usas para matar insectos o plagas. Muchos le dicen veneno.": "Lo que usas para matar insectos o plagas. Muchos le dicen veneno.",
+        "Ninguno": "Ninguno",
+        "No uso nada de esto.": "No uso nada de esto.",
+        "¿Cuándo quieres tener tu cosecha?": "¿Cuándo quieres tener tu cosecha?",
+        "Toca los meses en que te gustaría cosechar. Si todavía no lo sabes, toca \"No sé todavía\".": "Toca los meses en que te gustaría cosechar. Si todavía no lo sabes, toca \"No sé todavía\".",
+        "✅ Crear mi parcela": "✅ Crear mi parcela",
+        "No sé todavía": "No sé todavía",
+        "Si no eliges meses, te recomendamos los mejores cultivos sin pensar en la fecha de cosecha.": "Si no eliges meses, te recomendamos los mejores cultivos sin pensar en la fecha de cosecha.",
+        "Enero": "Enero",
+        "Febrero": "Febrero",
+        "Marzo": "Marzo",
+        "Abril": "Abril",
+        "Mayo": "Mayo",
+        "Junio": "Junio",
+        "Julio": "Julio",
+        "Agosto": "Agosto",
+        "Septiembre": "Septiembre",
+        "Octubre": "Octubre",
+        "Noviembre": "Noviembre",
+        "Diciembre": "Diciembre",
+        "PASO 1 DE 5": "PASO 1 DE 5",
+        "PASO 2 DE 5": "PASO 2 DE 5",
+        "PASO 3 DE 5": "PASO 3 DE 5",
+        "PASO 4 DE 5": "PASO 4 DE 5",
+        "PASO 5 DE 5": "PASO 5 DE 5"
+      }
+    }
+  },
+  "qu": {
+    "lang": {
+      "code": "QU",
+      "name": "Runasimi",
+      "html": "qu",
+      "locale": "es-PE"
+    },
+    "brand": {
+      "name": "Musuq Allpa",
+      "mascot": "Neugrac",
+      "mascotAlt": "Neugrac, Musuq Allpapa uywan"
+    },
+    "controls": {
+      "env": {
+        "space": "Hanaq pachapi",
+        "field": "Chakrapi",
+        "hint": "Hanaq pachaman utaq chakraman t'ikray"
+      },
+      "lang": {
+        "hint": "Simita t'ikray"
+      },
+      "role": {
+        "farmer": "Chakra runapaq",
+        "agronomist": "Agrónomopaq",
+        "hint": "Chakra runapaq utaq agrónomopaq t'ikray"
+      },
+      "play": "Purichiy",
+      "pause": "Sayachiy"
+    },
+    "scene": {
+      "label": "Chakra 3D. Qatiq ruwayman rinapaq pañaman aysay; kutinapaqtaq lluq'iman aysay.",
+      "noGl": "3D rikuyqa manam kicharikunchu. Wakin llamk'anakunaqa purishanmi.",
+      "credit": "Tiqsimuyupa rikch'aynin: NASA Blue Marble"
+    },
+    "timer": {
+      "label": "Tarpuy mit'apa puriynin",
+      "day": "P'unchaw {d} / {t}",
+      "campaign": "Mit'a {n}",
+      "days": "{n} p'unchaw"
+    },
+    "phases": {
+      "virgin": {
+        "name": "Purun allpa",
+        "tip": "Kay allpaqa manaraqmi llamk'asqachu. Yapuyta qallarinapaq chakrata pañaman muyuchiy.",
+        "note": "Manaraqmi llamk'asqachu. Manaraq yapushaspa allpata qhawarichiy.",
+        "until": "Qallarinapaq chakrata pañaman muyuchiy"
+      },
+      "plow": {
+        "name": "Yapuy",
+        "tip": "Allpata t'ikray, samananpaq, unuta waqaychananpaq.",
+        "tasks": "Allpata t'ikray, ñut'uy, pampachay; wanuta chaqruy.",
+        "note": "Allpaqa allin huq'un yapunapaq. Wanuta chaqruy, manaraq wachushaspataq pampachay.",
+        "until": {
+          "one": "Tarpuypaq huk p'unchawllaña kashan",
+          "other": "Tarpuypaq {n} p'unchawraq kashan"
+        }
+      },
+      "sow": {
+        "name": "Tarpuy",
+        "tip": "Muhuta wachupi churay, ama nishu ukhutachu, ama nishu k'iskitachu.",
+        "tasks": "Wachupi tarpuy; muhuta pisi allpawan p'ampay.",
+        "note": "Huq'u allpapi tarpuy; huq'u 20 % urayman uraykuqtin qarpay.",
+        "until": {
+          "one": "Phutunanpaq huk p'unchawllaña kashan",
+          "other": "Phutunanpaq {n} p'unchawraq kashan"
+        }
+      },
+      "grow": {
+        "name": "Wiñay",
+        "tip": "Qarpay, qhuray, hallmay. Yurata wiñanankama uyway.",
+        "tasks": "Qhuray, hallmay, qarpay; khurukunata qhaway.",
+        "note": "NDVI-ta huq'utawan qhaway. Manaraq t'ikashaqtin hallmay; qasa tutakunapi yurata hark'ay.",
+        "until": {
+          "one": "Aymuraypaq huk p'unchawllaña kashan",
+          "other": "Aymuraypaq {n} p'unchawraq kashan"
+        }
+      },
+      "harvest": {
+        "name": "Aymuray",
+        "tip": "Rutuy, ch'akichiy, hinaspa ruruta ch'aki chiqaspi waqaychay.",
+        "tasks": "Rutuy, ch'akichiy, waqtay, waqaychay.",
+        "note": "Ruru sillupaq sinchiña kaqtin aymuray; ch'akichishaspa paramanta hark'ay.",
+        "until": {
+          "one": "Tukunapaq huk p'unchawllaña kashan",
+          "other": "Tukunapaq {n} p'unchawraq kashan"
+        }
+      }
+    },
+    "agro": {
+      "panel": "Agrónomopaq willakuykuna",
+      "title": "Qhawarina chakra",
+      "simulated": "Qhawarinallapaq yupaykuna",
+      "simulatedNote": "Kay yupaykunaqa qhawarinallapaqmi, manam chiqapchu. Qhipaman kaykunamanta hamunqa: NASA POWER (pacha), SMAP (allpapa huq'un), GPM IMERG (para), MODIS (NDVI).",
+      "meta": {
+        "crop": "Tarpusqa",
+        "cropName": "Kinwa",
+        "place": "Maypi (qhawarinapaq)",
+        "altitude": "Hanaq kaynin",
+        "altUnit": "m",
+        "start": "Qallariy p'unchaw"
+      },
+      "kpi": {
+        "ndvi": "Yurapa kallpan (NDVI)",
+        "sm": "Allpapa huq'u kaynin",
+        "temp": "Q'uñi kay: pisi, hatun",
+        "rain": "Huñusqa para",
+        "rainToday": "kunan {n} mm"
+      },
+      "status": {
+        "bare": "Q'ala allpa",
+        "emerging": "Phutushan",
+        "growing": "Wiñashan",
+        "peak": "Sinchi kallpayuq",
+        "ripening": "Puqushan",
+        "optimal": "Allinmi",
+        "low": "Pisi",
+        "high": "Achka",
+        "frost": "Qasa hamunman",
+        "noFrost": "Mana qasachu",
+        "waiting": "Manaraq qallarinchu"
+      },
+      "charts": {
+        "ndvi": "NDVI",
+        "sm": "Allpapa huq'u kaynin (% vol.)",
+        "temp": "Q'uñi kay (°C)",
+        "rain": "Para sapa simanapi (mm)",
+        "max": "hatun",
+        "min": "pisi",
+        "frost": "qasa",
+        "optimal": "allin",
+        "day": "P'unchaw {d}",
+        "week": "Simana {w}",
+        "axis": "Tarpuy mit'apa p'unchawnin"
+      },
+      "table": {
+        "title": "Tarpuy mit'apa ruwayninkuna",
+        "phase": "Ruway",
+        "days": "P'unchawkuna",
+        "tasks": "Ruwanakuna",
+        "ndvi": "NDVI chawpi",
+        "rain": "Para (mm)",
+        "tmin": "Pisi q'uñi (°C)",
+        "tmax": "Hatun q'uñi (°C)",
+        "sm": "Huq'u (%)",
+        "state": "Imayna",
+        "done": "Ruwasqaña",
+        "current": "Ruwakushan",
+        "pending": "Manaraq"
+      },
+      "soil": {
+        "title": "Allpa qhawariy",
+        "texture": "Allpa",
+        "textureValue": "Aquwan llink'iwan chaqrusqa",
+        "ref": "Allin tupu",
+        "ph": "pH",
+        "om": "Wanu (materia orgánica)",
+        "n": "Nitrógeno",
+        "p": "Fósforo",
+        "k": "Potasio"
+      },
+      "note": "Kunay",
+      "json": "P'unchawpa qillqan (JSON)"
+    },
+    "survey": {
+      "back": "← Kutiy",
+      "selectedMonths": "{n} cosechana killata akllarqanki. Haykapi tarpunaykita willasqayki.",
+      "cropType": "¿Ima laya {crop}ta tarpurqanki?",
+      "texts": {
+        "← Volver": "← Kutiy",
+        "Papa nativa": "Qichwa papa",
+        "Papa": "Papa",
+        "Quinua": "Kinuwa",
+        "Cebada": "Siwara",
+        "Haba": "Hawas",
+        "Maíz amarillo": "Qillu sara",
+        "Choclo": "Chuqllu",
+        "Arroz": "Arus",
+        "Palta Hass": "Hass palta",
+        "Tomate": "Tumati",
+        "Cebolla": "Siwulla",
+        "Camote": "Apichu",
+        "Fresa": "Frutilla",
+        "Espárrago": "Esparrago",
+        "Café": "Kafi",
+        "Plátano": "Latanu",
+        "Resiste el frío de la sierra": "Sallqapa chirinta awantan",
+        "La papa de siempre": "Sapa kuti tarpusqa papa",
+        "Grano pequeño que aguanta la sequía": "Chakiyta awantaq huchuy muru",
+        "Grano para comer y para los animales": "Mikunapaq, uywakunapaqpas muru",
+        "Mejora la tierra para los siguientes cultivos": "Qatiq tarpuykunapaq allpata allinchan",
+        "Maíz seco para guardar": "Waqaychanapaq chaki sara",
+        "Maíz tierno para comer": "Mikunapaq llullu sara",
+        "Crece en terreno húmedo": "Huq allpapi wiñan",
+        "Árbol que da fruta por muchos años": "Achka watakunapi ruruchaq sach'a",
+        "Árbol tropical de fruta dulce": "Q'uñi suyupi misk'i ruruq sach'a",
+        "Fruta roja para la cocina": "Yanukunapaq puka ruru",
+        "Se guarda bien después de la cosecha": "Cosechamanta allinta waqaychakun",
+        "Crece bajo tierra, se come cocido o frito": "Allpa ukhupi wiñan, chayachisqata mikukun",
+        "Fruta roja y dulce": "Puka misk'i ruru",
+        "Cosecha durante varios meses al año": "Watapi achka killakunata cosechakun",
+        "Arbusto de zonas altas y húmedas": "Huq hanaq suyukunapi wiñaq sach'a",
+        "Árbol de la selva alta": "Hanaq yunka sach'a",
+        "Crece todo el año en zonas cálidas": "Q'uñi suyukunapi tukuy wata wiñan",
+        "Amarilla": "Qillu",
+        "Amarillo": "Qillu",
+        "Morada": "Kulli",
+        "Morado": "Kulli",
+        "Blanca": "Yuraq",
+        "Blanco": "Yuraq",
+        "Roja": "Puka",
+        "Verde": "Q'umir",
+        "Seca": "Chaki",
+        "Redondo": "Muyu",
+        "Largo": "Suni",
+        "¿Qué usas en tu parcela?": "¿Imatataq chakraykipi llamkachanki?",
+        "Puedes elegir varios. Si no usas nada, toca Ninguno.": "Achkata akllawaqmi. Mana imatapas llamkachaspayki, Manam mayqinninpas ñiy.",
+        "Siguiente →": "Qatiq →",
+        "¿Dónde está tu parcela?": "¿Maypitaq chakrayki kachkan?",
+        "Elige cómo quieres encontrarla.": "Imayna tarinaykita akllay.",
+        "Elige la forma más fácil para ti": "Aswan facil kaqta akllay",
+        "Puedes usar la ubicación de tu celular o buscar tu comunidad, distrito o provincia por nombre.": "Celularykipa tarikusqanta llamkachiy utaq llaqtaykipa sutinta maskay.",
+        "Usar mi GPS": "GPSniyta llamkachiy",
+        "📍 Usar mi GPS": "📍 GPSniyta llamkachiy",
+        "Ubicaremos el punto donde estás. Necesitas permitir el acceso a tu ubicación.": "Maypi kasqaykita tarisaqku. Tarikusqaykiman yaykuyta saqiy.",
+        "O escribe el nombre de tu ubicación": "Utaq maypi kasqaykipa sutinta qillqay",
+        "Escribe al menos 2 letras. Te mostraremos varias localidades mientras escribes; elige una para revisar el punto en el mapa.": "Iskay letrata qillqay. Llaqtata akllay mapapi qawanaykipaq.",
+        "✅ Esta es mi parcela": "✅ Kaymi chakray",
+        "← Elegir otra forma de ubicarme": "← Huk imayna tarinata akllay",
+        "¿Qué sembraste en tu parcela la campaña pasada?": "¿Qayna tarpuy mitapi imatataq tarpurqanki?",
+        "Toca lo que sembraste. Puedes elegir más de uno. Así no repetimos el mismo cultivo y la tierra descansa.": "Tarpusqaykita akllay. Achkata akllawaqmi, allpa samananpaq.",
+        "No sé o no sembré nada": "Mana yachanichu utaq mana tarpurqanichu",
+        "No sé": "Mana yachanichu",
+        "¿Cómo le das agua a tu cultivo?": "¿Imaynataq tarpuykiyta qarpanki?",
+        "Elige la forma que más se parece a lo que haces.": "Rurasqaykiman rikchakuqta akllay.",
+        "Solo lluvia": "Para sapallan",
+        "No riego. Espero que llueva.": "Parallata suyayani.",
+        "Manguera o canal": "Manguera utaq yarqa",
+        "Le echo agua con balde, manguera o por canal.": "Baldewan, manguerawan utaq yarqawan qarpani.",
+        "Aspersor": "Chaqchuq",
+        "Tengo un aparato que riega como lluvia.": "Parahina qarpana kanmi.",
+        "Goteo": "Sutuywan qarpay",
+        "Tengo tubos que dan agua gota a gota, cerca de la raíz.": "Saphipa qayllanpi tubokuna yakuta sutuchin.",
+        "Guano de corral": "Kancha wanu",
+        "Estiércol de animales, como vacas o cuyes.": "Waka utaq quwipa wanun.",
+        "Abono de tienda": "Rantisqa wanu",
+        "Abono comprado en la tienda agraria.": "Chakra tiendapi rantisqa wanu.",
+        "Pesticida": "Kuru wañuchiq",
+        "Lo que usas para matar insectos o plagas. Muchos le dicen veneno.": "Kurukunata wañuchinapaq llamkachasqa.",
+        "Ninguno": "Manam mayqinninpas",
+        "No uso nada de esto.": "Manam kaykunata llamkachanichu.",
+        "¿Cuándo quieres tener tu cosecha?": "¿Haykapi cosechayta munanki?",
+        "Toca los meses en que te gustaría cosechar. Si todavía no lo sabes, toca \"No sé todavía\".": "Cosechana killakunata akllay, utaq “Manaraq yachanichu” ñiy.",
+        "✅ Crear mi parcela": "✅ Chakrayta kamay",
+        "No sé todavía": "Manaraq yachanichu",
+        "Si no eliges meses, te recomendamos los mejores cultivos sin pensar en la fecha de cosecha.": "Killakunata mana akllaptiyki, allin tarpuykunata akllasaqku.",
+        "Enero": "Qulla puquy",
+        "Febrero": "Hatun puquy",
+        "Marzo": "Pawqar waray",
+        "Abril": "Ayriway",
+        "Mayo": "Aymuray",
+        "Junio": "Inti raymi",
+        "Julio": "Anta situwa",
+        "Agosto": "Qhapaq situwa",
+        "Septiembre": "Quya raymi",
+        "Octubre": "Uma raymi",
+        "Noviembre": "Aya marqay",
+        "Diciembre": "Qhapaq raymi",
+        "PASO 1 DE 5": "1 PURIY / 5",
+        "PASO 2 DE 5": "2 PURIY / 5",
+        "PASO 3 DE 5": "3 PURIY / 5",
+        "PASO 4 DE 5": "4 PURIY / 5",
+        "PASO 5 DE 5": "5 PURIY / 5"
+      }
+    }
+  },
+  "en": {
+    "lang": {
+      "code": "EN",
+      "name": "English",
+      "html": "en",
+      "locale": "en-US"
+    },
+    "brand": {
+      "name": "Musuq Allpa",
+      "mascot": "Neugrac",
+      "mascotAlt": "Neugrac, the Musuq Allpa mascot"
+    },
+    "controls": {
+      "env": {
+        "space": "Space mode",
+        "field": "Field mode",
+        "hint": "Switch between space and field"
+      },
+      "lang": {
+        "hint": "Change language"
+      },
+      "role": {
+        "farmer": "Farmer mode",
+        "agronomist": "Agronomist mode",
+        "hint": "Switch between farmer and agronomist"
+      },
+      "play": "Resume",
+      "pause": "Pause"
+    },
+    "scene": {
+      "label": "3D plot. Drag right to move to the next phase and left to go back. The arrow keys work too.",
+      "noGl": "The 3D view could not load. The rest of the module still works.",
+      "credit": "Earth imagery: NASA Blue Marble"
+    },
+    "timer": {
+      "label": "Season progress",
+      "day": "Day {d} of {t}",
+      "campaign": "Season {n}",
+      "days": "{n} days"
+    },
+    "phases": {
+      "virgin": {
+        "name": "Virgin soil",
+        "tip": "This land has not been worked yet. Turn the plot to the right to start plowing.",
+        "note": "No field work logged. Take a soil sample before breaking ground.",
+        "until": "Turn the plot to the right to start"
+      },
+      "plow": {
+        "name": "Plow",
+        "tip": "Turn the soil over so it can breathe and hold water.",
+        "tasks": "Break, crumble and level the soil; work in organic matter.",
+        "note": "Moisture is right for plowing. Work in organic matter and level before furrowing.",
+        "until": {
+          "one": "1 day left until sowing",
+          "other": "{n} days left until sowing"
+        }
+      },
+      "sow": {
+        "name": "Sow",
+        "tip": "Place the seed in the furrow, not too deep and not too close together.",
+        "tasks": "Sow in furrows and cover the seed with a thin layer of soil.",
+        "note": "Sow into moist soil and irrigate if moisture drops below 20%.",
+        "until": {
+          "one": "1 day left until sprouting",
+          "other": "{n} days left until sprouting"
+        }
+      },
+      "grow": {
+        "name": "Grow",
+        "tip": "Water, weed and hill up. Look after the plant while it grows.",
+        "tasks": "Weed, hill up, irrigate and scout for pests.",
+        "note": "Track NDVI and moisture. Hill up before flowering and protect the crop on frost nights.",
+        "until": {
+          "one": "1 day left until harvest",
+          "other": "{n} days left until harvest"
+        }
+      },
+      "harvest": {
+        "name": "Harvest",
+        "tip": "Cut, dry and store the grain in a dry place.",
+        "tasks": "Cut, dry, thresh and store.",
+        "note": "Harvest when the grain resists a fingernail and keep rain off while it dries.",
+        "until": {
+          "one": "1 day left to close the season",
+          "other": "{n} days left to close the season"
+        }
+      }
+    },
+    "agro": {
+      "panel": "Data for the agronomist",
+      "title": "Demo plot",
+      "simulated": "Simulated data",
+      "simulatedNote": "Sample values for the prototype. The real version will read NASA POWER (weather), SMAP (soil moisture), GPM IMERG (rainfall) and MODIS (NDVI).",
+      "meta": {
+        "crop": "Crop",
+        "cropName": "Quinoa",
+        "place": "Sample location",
+        "altitude": "Elevation",
+        "altUnit": "m a.s.l.",
+        "start": "Season start"
+      },
+      "kpi": {
+        "ndvi": "Crop vigor (NDVI)",
+        "sm": "Soil moisture",
+        "temp": "Min and max temperature",
+        "rain": "Rainfall to date",
+        "rainToday": "today {n} mm"
+      },
+      "status": {
+        "bare": "Bare soil",
+        "emerging": "Sprouting",
+        "growing": "Growing",
+        "peak": "High vigor",
+        "ripening": "Ripening",
+        "optimal": "Optimal",
+        "low": "Low",
+        "high": "High",
+        "frost": "Frost risk",
+        "noFrost": "No frost",
+        "waiting": "Season not started"
+      },
+      "charts": {
+        "ndvi": "NDVI",
+        "sm": "Soil moisture (% vol.)",
+        "temp": "Temperature (°C)",
+        "rain": "Rainfall per week (mm)",
+        "max": "max",
+        "min": "min",
+        "frost": "frost",
+        "optimal": "optimal",
+        "day": "Day {d}",
+        "week": "Week {w}",
+        "axis": "Day of season"
+      },
+      "table": {
+        "title": "Season phases",
+        "phase": "Phase",
+        "days": "Days",
+        "tasks": "Key tasks",
+        "ndvi": "Mean NDVI",
+        "rain": "Rain (mm)",
+        "tmin": "Mean min T (°C)",
+        "tmax": "Mean max T (°C)",
+        "sm": "Mean moisture (%)",
+        "state": "Status",
+        "done": "Done",
+        "current": "In progress",
+        "pending": "Pending"
+      },
+      "soil": {
+        "title": "Soil test",
+        "texture": "Texture",
+        "textureValue": "Sandy loam",
+        "ref": "Reference range",
+        "ph": "pH",
+        "om": "Organic matter",
+        "n": "Total nitrogen",
+        "p": "Available phosphorus",
+        "k": "Available potassium"
+      },
+      "note": "Recommendation",
+      "json": "Daily record (JSON)"
+    },
+    "survey": {
+      "back": "← Back",
+      "selectedMonths": "You selected {n} harvest month(s). We will suggest when to sow.",
+      "cropType": "Which type of {crop} did you grow?",
+      "texts": {
+        "← Volver": "← Back",
+        "Papa nativa": "Native potato",
+        "Papa": "Potato",
+        "Quinua": "Quinoa",
+        "Cebada": "Barley",
+        "Haba": "Broad bean",
+        "Maíz amarillo": "Yellow maize",
+        "Choclo": "Fresh corn",
+        "Arroz": "Rice",
+        "Palta Hass": "Hass avocado",
+        "Tomate": "Tomato",
+        "Cebolla": "Onion",
+        "Camote": "Sweet potato",
+        "Fresa": "Strawberry",
+        "Espárrago": "Asparagus",
+        "Café": "Coffee",
+        "Cacao": "Cocoa",
+        "Plátano": "Banana",
+        "Resiste el frío de la sierra": "Tolerates the cold highlands",
+        "La papa de siempre": "The familiar potato",
+        "Grano pequeño que aguanta la sequía": "Small grain that tolerates drought",
+        "Grano para comer y para los animales": "Grain for food and animal feed",
+        "Mejora la tierra para los siguientes cultivos": "Improves soil for the next crops",
+        "Maíz seco para guardar": "Dry maize for storage",
+        "Maíz tierno para comer": "Tender corn for eating",
+        "Crece en terreno húmedo": "Grows in wet ground",
+        "Árbol que da fruta por muchos años": "A tree that bears fruit for many years",
+        "Árbol tropical de fruta dulce": "A tropical tree with sweet fruit",
+        "Fruta roja para la cocina": "Red fruit for cooking",
+        "Se guarda bien después de la cosecha": "Stores well after harvest",
+        "Crece bajo tierra, se come cocido o frito": "Grows underground, eaten cooked or fried",
+        "Fruta roja y dulce": "Sweet red fruit",
+        "Cosecha durante varios meses al año": "Harvested for several months each year",
+        "Arbusto de zonas altas y húmedas": "A shrub from humid highlands",
+        "Árbol de la selva alta": "A tree from the high jungle",
+        "Crece todo el año en zonas cálidas": "Grows year-round in warm areas",
+        "Amarilla": "Yellow",
+        "Amarillo": "Yellow",
+        "Morada": "Purple",
+        "Morado": "Purple",
+        "Blanca": "White",
+        "Blanco": "White",
+        "Roja": "Red",
+        "Verde": "Green",
+        "Seca": "Dry",
+        "Redondo": "Round",
+        "Largo": "Long",
+        "¿Qué usas en tu parcela?": "What do you use on your plot?",
+        "Puedes elegir varios. Si no usas nada, toca Ninguno.": "Choose all that apply. If you use none, select None.",
+        "Siguiente →": "Next →",
+        "¿Dónde está tu parcela?": "Where is your plot?",
+        "Elige cómo quieres encontrarla.": "Choose how to find it.",
+        "Elige la forma más fácil para ti": "Choose the easiest way for you",
+        "Puedes usar la ubicación de tu celular o buscar tu comunidad, distrito o provincia por nombre.": "Use your phone location or search for your community, district or province by name.",
+        "Usar mi GPS": "Use my GPS",
+        "📍 Usar mi GPS": "📍 Use my GPS",
+        "Ubicaremos el punto donde estás. Necesitas permitir el acceso a tu ubicación.": "We will find where you are. Allow access to your location.",
+        "O escribe el nombre de tu ubicación": "Or enter your location name",
+        "Escribe al menos 2 letras. Te mostraremos varias localidades mientras escribes; elige una para revisar el punto en el mapa.": "Enter at least 2 letters. Choose a place from the results to check it on the map.",
+        "✅ Esta es mi parcela": "✅ This is my plot",
+        "← Elegir otra forma de ubicarme": "← Choose another location method",
+        "¿Qué sembraste en tu parcela la campaña pasada?": "What did you grow last season?",
+        "Toca lo que sembraste. Puedes elegir más de uno. Así no repetimos el mismo cultivo y la tierra descansa.": "Select what you grew. You can choose more than one so we can plan crop rotation.",
+        "No sé o no sembré nada": "I do not know or did not grow anything",
+        "No sé": "I do not know",
+        "¿Cómo le das agua a tu cultivo?": "How do you water your crops?",
+        "Elige la forma que más se parece a lo que haces.": "Choose the method closest to yours.",
+        "Solo lluvia": "Rain only",
+        "No riego. Espero que llueva.": "I rely on rainfall.",
+        "Manguera o canal": "Hose or canal",
+        "Le echo agua con balde, manguera o por canal.": "I use a bucket, hose or canal.",
+        "Aspersor": "Sprinkler",
+        "Tengo un aparato que riega como lluvia.": "I have a sprinkler that waters like rain.",
+        "Goteo": "Drip irrigation",
+        "Tengo tubos que dan agua gota a gota, cerca de la raíz.": "Pipes drip water near the roots.",
+        "Guano de corral": "Animal manure",
+        "Estiércol de animales, como vacas o cuyes.": "Manure from cows or guinea pigs.",
+        "Abono de tienda": "Commercial fertilizer",
+        "Abono comprado en la tienda agraria.": "Fertilizer from an agricultural store.",
+        "Pesticida": "Pesticide",
+        "Lo que usas para matar insectos o plagas. Muchos le dicen veneno.": "Products used to control pests.",
+        "Ninguno": "None",
+        "No uso nada de esto.": "I use none of these.",
+        "¿Cuándo quieres tener tu cosecha?": "When would you like to harvest?",
+        "Toca los meses en que te gustaría cosechar. Si todavía no lo sabes, toca \"No sé todavía\".": "Choose your harvest months, or select “I do not know yet”.",
+        "✅ Crear mi parcela": "✅ Create my plot",
+        "No sé todavía": "I do not know yet",
+        "Si no eliges meses, te recomendamos los mejores cultivos sin pensar en la fecha de cosecha.": "Without harvest months, we recommend crops without a harvest date constraint.",
+        "Enero": "January",
+        "Febrero": "February",
+        "Marzo": "March",
+        "Abril": "April",
+        "Mayo": "May",
+        "Junio": "June",
+        "Julio": "July",
+        "Agosto": "August",
+        "Septiembre": "September",
+        "Octubre": "October",
+        "Noviembre": "November",
+        "Diciembre": "December",
+        "PASO 1 DE 5": "STEP 1 OF 5",
+        "PASO 2 DE 5": "STEP 2 OF 5",
+        "PASO 3 DE 5": "STEP 3 OF 5",
+        "PASO 4 DE 5": "STEP 4 OF 5",
+        "PASO 5 DE 5": "STEP 5 OF 5"
+      }
+    }
+  }
+}

@@ -1,6 +1,8 @@
   <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="js/core/api.js"></script>
+<script src="shared/domain/climate.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,8 +11,8 @@
 <script src="js/almacen.js"></script>
 <script src="js/parcela-datos.js"></script>
 <script src="js/ruta.js"></script>
-<script src="js/ciclo.js"></script>
-<script src="js/motor.js"></script>
+<script src="shared/domain/ciclo.js"></script>
+<script src="shared/domain/motor.js"></script>
 <script src="js/clima.js"></script>
 <script src="js/explica.js"></script>
 <script>
@@ -53,6 +55,10 @@
   details ul{margin:8px 0 0; padding-left:22px; line-height:1.5; font-size:16px}
   .volver{font:inherit; font-weight:800; width:100%; min-height:60px; margin-top:14px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer}
 </style>
+<link rel="stylesheet" href="css/components.css">
+<script src="js/core/i18n.js" defer></script>
+<script src="js/ui/language-switch.js" defer></script>
+<script src="js/ui/shell.js" defer></script>
 </head>
 <body>
 <main>
@@ -188,6 +194,15 @@ function pintar(r, entrada){
 
 async function iniciar(){
   const p = Almacen.activa();
+  try {
+    const response = await CampoApi.recommend(p);
+    if (response.clima) { try { localStorage.setItem('clima', JSON.stringify(response.clima)); } catch {} }
+    pintar(response.resultado, response.entrada);
+    return;
+  } catch (error) {
+    if (navigator.onLine) throw error;
+    // Offline compatibility uses the same pure domain engine and explicitly missing data.
+  }
   const perfil = p.perfil;
   const cultivos = await (await fetch('data/cultivos.json')).json();
 
@@ -214,7 +229,7 @@ async function iniciar(){
 }
 
 iniciar().catch(() => {
-  $('contenido').innerHTML = '<div class="aviso">No pudimos preparar tu recomendación. Revisa que la app esté abierta desde Live Server o desde internet.</div>';
+  $('contenido').innerHTML = '<div class="aviso" role="alert">No pudimos preparar tu recomendación. Revisa tu conexión y vuelve a intentar. <button type="button" onclick="location.reload()">Reintentar</button></div>';
 });
 </script>
 </body>

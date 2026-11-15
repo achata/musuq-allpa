@@ -4,15 +4,19 @@
   - Resto de archivos: primero el caché, para abrir rápido sin señal.
   Al cambiar archivos, sube CACHE_VERSION.
 */
-const CACHE_VERSION = 'campo-v10';
+const CACHE_VERSION = 'campo-v12';
 
 const ARCHIVOS = [
+  'js/ui/motion.js',
+  'js/core/api.js', 'js/core/i18n.js', 'js/ui/language-switch.js', 'js/ui/shell.js',
+  'shared/domain/climate.js', 'css/components.css', 'data/i18n.json', 'data/interactive.json', 'js/features/interactive/scene.js',
   './',
   'index.html',
   'bienvenida.html',
   'ubicar-chacra.html',
   'mi-campo.html',
   'parcela.html',
+  'parcela_neugrac_interactiva.html',
   'conocerte.html',
   'riego.html',
   'insumos.html',
@@ -25,8 +29,8 @@ const ARCHIVOS = [
   'js/almacen.js',
   'js/parcela-datos.js',
   'js/ruta.js',
-  'js/ciclo.js',
-  'js/motor.js',
+  'shared/domain/ciclo.js',
+  'shared/domain/motor.js',
   'js/clima.js',
   'js/resumen.js',
   'js/explica.js',
@@ -57,6 +61,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   const url = new URL(req.url);
+  if (url.pathname.startsWith('/api/')) return;
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
 
   const esPagina = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');

@@ -35,7 +35,7 @@ const Ubicacion = (() => {
 
   async function altitudDe(lat, lon) {
     const r = await fetch(
-      `https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`
+      `/api/elevation?lat=${lat}&lon=${lon}`
     );
     if (!r.ok) throw new Error('ALTITUD_FALLA');
     const j = await r.json();

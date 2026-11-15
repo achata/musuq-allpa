@@ -1,5 +1,5 @@
 const assert = require("assert");
-const Motor = require("../js/motor.js");
+const Motor = require("../shared/domain/motor.js");
 const cultivos = require("../data/cultivos.json");
 
 const casos = [

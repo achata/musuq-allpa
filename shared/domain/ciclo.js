@@ -50,3 +50,5 @@ const Ciclo = (() => {
 
   return { linea, siembrasParaCosechar, resumenTexto, duracionMedia };
 })();
+if (typeof module !== 'undefined' && module.exports) module.exports = Ciclo;
+else window.Ciclo = Ciclo;

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script src="js/core/api.js"></script>
+<script src="shared/domain/climate.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,6 +37,10 @@
   .principal{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
   .secundario{font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer; width:100%}
 </style>
+<link rel="stylesheet" href="css/components.css">
+<script src="js/core/i18n.js" defer></script>
+<script src="js/ui/language-switch.js" defer></script>
+<script src="js/ui/shell.js" defer></script>
 </head>
 <body>
 <main>
@@ -69,7 +75,7 @@ function render(){
     const c = catalogo.find(x => x.id === id);
     if (!c || !c.variedades || !c.variedades.length) return '';
     return `<div class="bloque">
-      <p>¿Qué tipo de ${c.nombre.toLowerCase()} sembraste?</p>
+      <p>${window.CampoI18n?.catalog ? CampoI18n.t('survey.cropType', { crop: c.nombre.toLowerCase() }) : `¿Qué tipo de ${c.nombre.toLowerCase()} sembraste?`}</p>
       <div class="chips">
         ${[...c.variedades, 'No sé'].map(v => `<button class="chip ${sel[id] === v ? 'on' : ''}" data-cultivo="${id}" data-variedad="${v}">${v}</button>`).join('')}
       </div>
@@ -87,10 +93,11 @@ document.addEventListener('click', e => {
   if (t) {
     const id = t.dataset.id;
     if (id in sel) delete sel[id]; else sel[id] = 'No sé';
+    Ruta.guardarBorrador({ cultivos: Object.keys(sel).map(id => ({ id, nombre: catalogo.find(c => c.id === id)?.nombre || id, variedad: sel[id] })) });
     render(); return;
   }
   const chip = e.target.closest('.chip');
-  if (chip) { sel[chip.dataset.cultivo] = chip.dataset.variedad; render(); }
+  if (chip) { sel[chip.dataset.cultivo] = chip.dataset.variedad; Ruta.guardarBorrador({ cultivos: Object.keys(sel).map(id => ({ id, nombre: catalogo.find(c => c.id === id)?.nombre || id, variedad: sel[id] })) }); render(); }
 });
 
 $('btnSiguiente').onclick = () => {
@@ -100,6 +107,7 @@ $('btnSiguiente').onclick = () => {
   }));
 };
 $('btnNada').onclick = () => guardar([]);
+document.addEventListener('campo:language', render);
 
 (async () => {
   catalogo = await (await fetch('data/cultivos.json')).json();
