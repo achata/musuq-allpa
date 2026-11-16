@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script src="js/core/api.js"></script>
-<script src="shared/domain/climate.js"></script>
+<link rel="icon" href="data/brand/favicon.ico?release=1.0.2" sizes="any">
+<link rel="icon" type="image/png" href="data/brand/favicon-32.png?release=1.0.2" sizes="32x32">
+<link rel="apple-touch-icon" href="data/brand/apple-touch-icon.png?release=1.0.2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});</script>
+<script src="js/core/api.js?release=1.0.2"></script>
+<script src="shared/domain/climate.js?release=1.0.2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#24523a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Mi campo · campo</title>
-<script src="js/almacen.js"></script>
+<script src="js/almacen.js?release=1.0.2"></script>
 <style>
   :root{--verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee; --texto:#1d2b22; --gris:#5f6b63; --borde:#e5e2da; --peligro:#b42318}
   *{box-sizing:border-box}
@@ -43,10 +47,11 @@
   input, select, textarea{font-size:16px}
   body{min-height:100dvh}
 </style>
-<link rel="stylesheet" href="css/components.css">
-<script src="js/core/i18n.js" defer></script>
-<script src="js/ui/language-switch.js" defer></script>
-<script src="js/ui/shell.js" defer></script>
+<link rel="stylesheet" href="css/components.css?release=1.0.2">
+<script src="js/core/i18n.js?release=1.0.2" defer></script>
+<script src="js/ui/language-switch.js?release=1.0.2" defer></script>
+<script src="js/ui/screens.js?release=1.0.2" defer></script>
+<script src="js/ui/shell.js?release=1.0.2" defer></script>
 </head>
 <body>
 <main>
@@ -57,22 +62,23 @@
 </main>
 
 <script>
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 function pintar(){
   const lista = Almacen.todas();
   const act = Almacen.activa();
 
   const activaHTML = act ? `
     <div class="activa">
-      <div class="nombre">${act.nombre}</div>
+      <div class="nombre" data-user-value>${esc(act.nombre)}</div>
       <div class="detalle">
         ${act.altitud ?? '--'} metros de altura<br>
-        ${act.perfil ? (act.perfil.cultivos || []).map(c => c.nombre).join(', ') || 'Sin cultivos todavía' : 'Falta completar el registro'}
+        ${act.perfil ? (act.perfil.cultivos || []).map(c => esc(c.nombre)).join(', ') || 'Sin cultivos todavía' : 'Falta completar el registro'}
       </div>
     </div>` : '';
 
   const listaHTML = lista.map(p => `
     <div class="parcela ${act && p.id === act.id ? 'on' : ''}">
-      <div class="n">${p.nombre}</div>
+      <div class="n" data-user-value>${esc(p.nombre)}</div>
       <div class="d">${p.altitud ?? '--'} metros · ${p.perfil ? 'Registro completo' : 'Falta completar'}</div>
       <div class="botones">
         ${act && p.id === act.id ? '' : `<button class="btn sec" data-activar="${p.id}">Usar esta</button>`}
@@ -116,6 +122,7 @@ document.addEventListener('click', e => {
           cultivos: p.perfil.cultivos || [],
           riego: p.perfil.riego,
           insumos: p.perfil.insumos || [],
+          cosecha: p.perfil.cosecha || [],
           editando: true
         });
       }
@@ -138,7 +145,7 @@ document.addEventListener('click', e => {
   const borrar = e.target.closest('[data-borrar]');
   if (borrar) {
     const parcela = Almacen.todas().find(item => item.id === borrar.dataset.borrar);
-    if (parcela && confirm(`¿Quitar "${parcela.nombre}"? Se borran sus respuestas.`)) {
+    if (parcela && confirm(CampoI18n.t('parcels.confirmDelete', { name: parcela.nombre }))) {
       Almacen.eliminar(parcela.id);
       pintar();
     }

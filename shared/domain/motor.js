@@ -36,7 +36,7 @@
 
   function evaluar(c, e) {
     const r = e.respuestas || {};
-    const base = { nombre: c.nombre, familia: c.familia, icono: c.icono,
+    const base = { id: c.id, nombre: c.nombre, familia: c.familia, icono: c.icono,
                    prioridad: c.prioridad, siembra: c.siembra, cosecha: c.cosecha, rot: c.rot };
 
     // Exclusiones claras: no se muestran

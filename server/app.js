@@ -16,7 +16,12 @@ function createApp({ providers = createProviders(createHttpClient(), new MemoryC
   app.use(express.json({ limit: '64kb' }));
   const api = express.Router();
   const recommend = createRecommendFarm({ providers, crops });
-  api.get('/health', (req, res) => res.json({ status: 'ok' }));
+  api.get('/health', (req, res) => res.json({ status: 'ok', version: require('../package.json').version }));
+  // A Maps JavaScript browser key is public by design and must be restricted to site referrers.
+  api.get('/maps-config', (req, res) => res.json({
+    provider: process.env.GOOGLE_MAPS_API_KEY ? 'google' : 'openstreetmap',
+    key: process.env.GOOGLE_MAPS_API_KEY || null
+  }));
   for (const [route, method] of [['climate', 'climate'], ['soil', 'soil'], ['slope', 'slope'], ['reverse', 'reverse'], ['elevation', 'elevation']]) {
     api.get('/' + route, async (req, res) => {
       const { lat, lon } = coordinates(req.query);

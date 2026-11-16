@@ -5,6 +5,7 @@ if (!document.getElementById('musuq-parcela')) return;
    1. Núcleo: utilidades, textos (i18n), modelo de la campaña y estado
    ========================================================================== */
 const root = document.getElementById('musuq-parcela');
+const visual = root.querySelector('.ma-visual');
 const $ = (s, el) => (el || root).querySelector(s);
 const $$ = (s, el) => Array.from((el || root).querySelectorAll(s));
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -28,7 +29,9 @@ function rng(seed) {
 const spring = CampoMotion.spring;
 
 const I18N = await CampoI18n.ready;
-const DATA = await fetch('/data/interactive.json').then(r => r.json());
+const context = await CampoInteractive.ready;
+if (!context) return;
+const DATA = context.data;
 const LANGS = I18N._meta.order;
 
 /* ---------- modelo de la campaña ---------- */
@@ -61,11 +64,11 @@ const store = {
 const pick = (v, list, d) => (list.indexOf(v) >= 0 ? v : d);
 const state = {
   lang: pick(store.get('lang'), LANGS, I18N._meta.default),
-  role: pick(store.get('role'), ['farmer', 'agronomist'], 'farmer'),
+  role: 'farmer',
   env: pick(store.get('env'), ['space', 'field'], 'space'),
-  stage: 0,          // 0 = tierra virgen; n >= 1 → fase (n-1) % 4 de la campaña ⌊(n-1)/4⌋ + 1
-  p: 0,              // avance dentro de la fase, 0..1
-  playing: true,
+  stage: Math.max(0, context.parcel.interactive?.stage | 0),          // 0 = tierra virgen; n >= 1 → fase (n-1) % 4 de la campaña ⌊(n-1)/4⌋ + 1
+  p: clamp(context.parcel.interactive?.p || 0, 0, .999),              // avance dentro de la fase, 0..1
+  playing: false,
   hover: null        // día bajo el cursor en los gráficos
 };
 const phaseIdx = () => (state.stage === 0 ? -1 : (state.stage - 1) % 4);
@@ -106,7 +109,7 @@ const ui = {
   bar: $('#ma-bar'), segs: $$('.ma-seg'), fills: $$('.ma-fill'),
   phaseName: $('#ma-phase-name'), until: $('#ma-until'), day: $('#ma-day'), camp: $('#ma-camp'),
   play: $('#ma-play'), tip: $('#ma-tip'), note: $('#ma-note'),
-  env: $('#ma-env'), envLab: $('#ma-env-lab'), lang: $('#ma-lang'), role: $('#ma-role'),
+  env: $('#ma-env'), envLab: $('#ma-env-lab'), lang: document.getElementById('ma-lang'), role: $('#ma-role'),
   json: $('#ma-json'), table: $('#ma-table'), soil: $('#ma-soil'), soilFoot: $('#ma-soil-foot'),
   kpi: {}
 };
@@ -154,14 +157,11 @@ function applyStatic() {
     el.textContent = tr('timer.days', { n: PH.find(p => p.id === el.getAttribute('data-days')).days });
   });
 
-  ui.lang.textContent = '';
-  LANGS.forEach(code => {
-    const s = h('span', null, I18N[code].lang.code);
-    if (code === state.lang) s.setAttribute('aria-current', 'true');
-    ui.lang.appendChild(s);
-  });
+  ui.lang.textContent = I18N[state.lang].lang.code;
   ui.lang.setAttribute('aria-label', tr('controls.lang.hint') + ': ' + tr('lang.name'));
-  ui.role.textContent = tr('controls.role.' + state.role);
+  ui.role.textContent = tr(state.role === 'farmer' ? 'integrated.showData' : 'integrated.hideData');
+  ui.role.setAttribute('aria-expanded', String(state.role === 'agronomist'));
+  ui.role.setAttribute('aria-controls', 'ma-agro');
   ui.role.setAttribute('aria-label', tr('controls.role.hint') + ': ' + tr('controls.role.' + state.role));
   ui.envLab.textContent = tr('controls.env.' + state.env);
   ui.env.setAttribute('aria-label', tr('controls.env.hint') + ': ' + tr('controls.env.' + state.env));
@@ -169,9 +169,9 @@ function applyStatic() {
 
   const P = DATA.parcel;
   $('#ma-place').textContent = P.place;
-  $('#ma-alt').textContent = num(P.altitude_m, 0) + ' ' + tr('agro.meta.altUnit');
-  $('#ma-start').textContent = new Intl.DateTimeFormat(tr('lang.locale'), { day: 'numeric', month: 'short', year: 'numeric' })
-    .format(new Date(P.start + 'T12:00:00'));
+  $('#ma-alt').textContent = (Number.isFinite(P.altitude_m) ? num(P.altitude_m, 0) : '—') + ' ' + tr('agro.meta.altUnit');
+  $('#ma-crop').textContent = CampoI18n.crop(context.crop.id, context.crop.nombre);
+  $('#ma-start').textContent = CampoI18n.t('integrated.notStarted');
 
   buildTable();
   buildSoil();
@@ -224,11 +224,12 @@ function buildSoil() {
     const li = h('li');
     const dec = s.value < 1 ? 2 : s.value < 20 ? 1 : 0;
     li.appendChild(h('span', 'lab', tr('agro.soil.' + s.id)));
-    li.appendChild(h('span', 'val', num(s.value, dec) + (s.unit ? ' ' + s.unit : '')));
+    li.appendChild(h('span', 'val', (s.value == null ? '—' : num(s.value, dec)) + (s.unit ? ' ' + s.unit : '')));
     const m = h('span', 'ma-meter'), band = h('i'), mark = h('b');
     const pct = v => clamp((v - s.scale[0]) / (s.scale[1] - s.scale[0]), 0, 1) * 100;
     band.style.left = pct(s.ref[0]) + '%'; band.style.width = (pct(s.ref[1]) - pct(s.ref[0])) + '%';
     mark.style.left = pct(s.value) + '%';
+    if (s.value == null) mark.hidden = true;
     m.appendChild(band); m.appendChild(mark);
     m.setAttribute('role', 'img');
     m.setAttribute('aria-label', tr('agro.soil.ref') + ': ' + num(s.ref[0], dec) + '–' + num(s.ref[1], dec) + (s.unit ? ' ' + s.unit : ''));
@@ -238,7 +239,7 @@ function buildSoil() {
   ui.soilFoot.textContent = '';
   const a = h('span'); a.appendChild(h('i')); a.appendChild(document.createTextNode(tr('agro.soil.ref')));
   ui.soilFoot.appendChild(a);
-  ui.soilFoot.appendChild(h('span', null, tr('agro.soil.texture') + ': ' + tr('agro.soil.textureValue')));
+  ui.soilFoot.appendChild(h('span', null, tr('agro.soil.texture') + ': ' + CampoI18n.t('integrated.unrecorded')));
 }
 
 /* ---------- indicadores y registro del día ---------- */
@@ -274,6 +275,9 @@ function updateAgro(d) {
   ui.json.textContent = JSON.stringify({
     parcel_id: DATA.parcel.id,
     crop: DATA.parcel.crop,
+    location: context.parcel.ubicacion,
+    profile: context.parcel.perfil,
+    cycle_source: 'catalogue',
     campaign: campaignNo(),
     phase: phaseId(),
     day: state.stage === 0 ? 0 : d + 1,
@@ -284,13 +288,17 @@ function updateAgro(d) {
     rain_mm: rain,
     rain_to_date_mm: cumRain[d],
     alerts: alerts,
-    simulated: true
+    simulated: true,
+    observations: CampoInteractive.weather
   }, null, 2);
 }
+
+document.getElementById('ma-download').addEventListener('click', () => { document.getElementById('ma-download').href = 'data:application/json;charset=utf-8,' + encodeURIComponent(ui.json.textContent); });
 
 /* ---------- lo que cambia con el tiempo ---------- */
 const last = {};
 function renderDynamic(force) {
+  $('#ma-prev').disabled = state.stage === 0;
   const pi = phaseIdx(), st = state.stage;
   for (let i = 0; i < 4; i++) {
     const f = pi < 0 ? 0 : i < pi ? 1 : i === pi ? state.p : 0;
@@ -320,7 +328,8 @@ function renderDynamic(force) {
   if (force || pkey !== last.pkey) {
     last.pkey = pkey;
     ui.phaseName.textContent = tr('phases.' + phaseId() + '.name');
-    ui.tip.textContent = tr('phases.' + phaseId() + '.tip');
+    if (window.CampoExperience) CampoExperience.setPhase(phaseId());
+    else ui.tip.textContent = CampoInteractive.tip(phaseId()) || tr('phases.' + phaseId() + '.tip');
     ui.note.textContent = tr('phases.' + phaseId() + '.note');
     updateTableState();
   }
@@ -342,6 +351,8 @@ function advance(dir) {
   if (next < 0) return false;
   state.stage = next;
   state.p = 0;
+  const parcel = Almacen.todas().find(p => p.id === context.parcel.id);
+  if (parcel) Almacen.guardar({ ...parcel, interactive: { ...parcel.interactive, cultivo: context.crop.id, stage: state.stage, p: state.p } });
   if (scene) scene.kick(dir);
   if (mascot) mascot.cheer();
   renderDynamic(true);
@@ -349,6 +360,15 @@ function advance(dir) {
 }
 
 /* ---------- controles ---------- */
+$('#ma-prev').addEventListener('click', () => advance(-1));
+$('#ma-next').addEventListener('click', () => advance(1));
+window.addEventListener('pagehide', () => {
+  const parcel = Almacen.todas().find(p => p.id === context.parcel.id);
+  // The crop selector saves before navigating; the old scene must not undo it.
+  if (parcel && (!parcel.interactive?.cultivo || parcel.interactive.cultivo === context.crop.id)) {
+    Almacen.guardar({ ...parcel, interactive: { ...parcel.interactive, cultivo: context.crop.id, stage: state.stage, p: state.p } });
+  }
+});
 ui.play.addEventListener('click', () => {
   if (state.stage === 0) { state.playing = true; advance(1); }
   else { state.playing = !state.playing; renderDynamic(true); }
@@ -362,13 +382,14 @@ ui.env.addEventListener('click', () => {
   if (scene) scene.setEnv(state.env);
   if (mascot) mascot.setEnv(state.env);
 });
-new LanguageSwitch(ui.lang);
 document.addEventListener('campo:language', () => { state.lang = CampoI18n.language; applyStatic(); });
 ui.role.addEventListener('click', () => {
   state.role = state.role === 'farmer' ? 'agronomist' : 'farmer';
   store.set('role', state.role);
   root.setAttribute('data-role', state.role);
-  ui.role.textContent = tr('controls.role.' + state.role);
+  ui.role.textContent = tr(state.role === 'farmer' ? 'integrated.showData' : 'integrated.hideData');
+  ui.role.setAttribute('aria-expanded', String(state.role === 'agronomist'));
+  ui.role.setAttribute('aria-controls', 'ma-agro');
   ui.role.setAttribute('aria-label', tr('controls.role.hint') + ': ' + tr('controls.role.' + state.role));
 });
 
@@ -755,6 +776,17 @@ function createScene() {
   const vox = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), new T.MeshLambertMaterial({ color: 0xffffff }), NVOX);
   vox.frustumCulled = false;
   slabs[0].add(vox);
+  const irrigation = new T.Group();
+  const irrigationType = context.parcel.perfil.riego;
+  const pipeMaterial = new T.MeshLambertMaterial({ color:irrigationType === 'goteo' ? 0x283d42 : 0x5896be });
+  if (irrigationType !== 'lluvia') {
+    for (let row=0;row<(irrigationType === 'aspersor' ? 1 : 6);row++) {
+      const pipe = new T.Mesh(new T.BoxGeometry(irrigationType === 'aspersor' ? .02 : .96, irrigationType === 'aspersor' ? .18 : .012, .016), pipeMaterial);
+      pipe.position.set(0, TOP + RH + (irrigationType === 'aspersor' ? .09 : .01), irrigationType === 'aspersor' ? 0 : -.46 + row/6);
+      irrigation.add(pipe);
+    }
+    slabs[0].add(irrigation);
+  }
 
   const rx = new Float32Array(72), rz = new Float32Array(72), plowOrder = new Uint8Array(72), rtint = new Float32Array(72);
   const ridge = new Float32Array(72), ridgeV = new Float32Array(72), fresh = new Float32Array(72).fill(1);
@@ -806,6 +838,7 @@ function createScene() {
 
   function updateCrop(dt, omega, t) {
     const st = state.stage, ph = phaseIdx(), camp = campaignNo(), p = state.p;
+    irrigation.visible = ph >= 0;
     if (st !== lastStage) {
       plowed.fill(ph >= 1 ? 1 : 0);
       harv.fill(0); sown.fill(ph === 1 ? 0 : 1);
@@ -842,7 +875,9 @@ function createScene() {
       cellState[k] = cs;
       const hg = RH * ridge[k], vis = hg > 0.0015 ? 1 : 0;
       put(vox, R0 + k, rx[k], TOP + hg / 2, rz[k], CELL * 0.985 * vis, hg, CELL * 0.86 * vis);
-      tmpC.copy(COL.ridgePale).lerp(COL.ridgeFresh, fresh[k]).multiplyScalar(rtint[k]);
+      const moisture = CampoInteractive.weather?.moisture;
+      const wetness = moisture == null ? 1 : lerp(1.16, .68, clamp(moisture / 65, 0, 1));
+      tmpC.copy(COL.ridgePale).lerp(COL.ridgeFresh, fresh[k]).multiplyScalar(rtint[k] * wetness);
       vox.setColorAt(R0 + k, tmpC);
     }
 
@@ -858,7 +893,7 @@ function createScene() {
 
     /* semillas, plantas y rastrojo */
     const bend = clamp(omega * 0.07, -0.55, 0.55);
-    const wind = state.env === 'field' && !REDUCED ? 1 : 0;
+    const wind = REDUCED ? 0 : clamp((CampoInteractive.weather?.wind ?? 0) / 18, 0, 1.6);
     for (let i = 0; i < 36; i++) {
       const r = (i / 6) | 0, j = i % 6, k0 = r * 12 + j * 2, o = sowOrder[i] / 36;
       let gT = 0, sdT = 0, sbT = 0;
@@ -884,7 +919,8 @@ function createScene() {
         if (seedY[i] <= 0) { seedY[i] = 0; seedVy[i] = Math.abs(seedVy[i]) > 0.25 ? -seedVy[i] * 0.34 : 0; }
       }
 
-      const base = TOP + RH * ridge[k0], g = grow[i], Hh = PLANT_H * g, b = P0 + i * 8;
+      const traits = CampoInteractive.traits;
+      const base = TOP + RH * ridge[k0], g = grow[i], Hh = PLANT_H * g * traits.height, b = P0 + i * 8;
       const sv2 = seedVis[i] > 0.02 ? 0.03 * seedVis[i] : 0;
       put(vox, S0 + i, px[i], base + 0.015 + seedY[i], pz[i], sv2, sv2, sv2);
       vox.setColorAt(S0 + i, COL.seed);
@@ -899,13 +935,16 @@ function createScene() {
       tmpC.copy(COL.stalk).lerp(COL.straw, mature); vox.setColorAt(b, tmpC);
       for (let l = 0; l < 4; l++) {
         const f = 0.28 + l * 0.18, s = smooth(0.16 + l * 0.17, 0.30 + l * 0.17, g), side = l % 2 ? -1 : 1;
-        put(vox, b + 1 + l, px[i] + dx * f + side * 0.034 * s, base + Hh * f, pz[i] + dz * f + (l > 1 ? 0.012 : -0.012) * s, 0.072 * s, 0.014 * (s > 0 ? 1 : 0), 0.036 * s, tmpQ);
+        put(vox, b + 1 + l, px[i] + dx * f + side * 0.034 * s * traits.leaf, base + Hh * f, pz[i] + dz * f + (l > 1 ? 0.012 : -0.012) * s, 0.072 * s * traits.leaf, 0.014 * (s > 0 ? 1 : 0), 0.036 * s * traits.leaf, tmpQ);
         tmpC.copy(COL.leaf).lerp(COL.leafRipe, mature * 0.85); vox.setColorAt(b + 1 + l, tmpC);
       }
-      const sp = smooth(0.78, 1.0, g);
-      put(vox, b + 5, px[i] + dx, base + Hh + 0.03 * sp, pz[i] + dz, 0.052 * sp, 0.07 * sp, 0.052 * sp, tmpQ);
-      put(vox, b + 6, px[i] + dx * 1.1, base + Hh + 0.082 * sp, pz[i] + dz * 1.1, 0.034 * sp, 0.042 * sp, 0.034 * sp, tmpQ);
-      tmpC.copy(COL.panGreen).lerp(pink[i] ? COL.panPink : COL.panGold, smooth(0.1, 0.9, mature));
+      const isGrain = ['quinua', 'cebada', 'maiz', 'choclo', 'arroz'].includes(context.crop.id);
+      const sp = isGrain ? smooth(0.78, 1.0, g) : 0;
+      const maize = traits.form === 'maize';
+      put(vox, b + 5, px[i] + dx + (maize ? .04 : 0), base + Hh * (maize ? .68 : 1) + 0.03 * sp, pz[i] + dz, (maize ? .045 : .052) * sp, (maize ? .11 : .07) * sp, .045 * sp, tmpQ);
+      put(vox, b + 6, px[i] + dx * 1.1, base + Hh + 0.082 * sp, pz[i] + dz * 1.1, (maize ? .016 : .034) * sp, (maize ? .075 : .042) * sp, .034 * sp, tmpQ);
+      if (maize) tmpC.set(traits.grain);
+      else tmpC.copy(COL.panGreen).lerp(pink[i] ? COL.panPink : COL.panGold, smooth(0.1, 0.9, mature));
       vox.setColorAt(b + 5, tmpC); vox.setColorAt(b + 6, tmpC);
       const sb = stub[i] > 0.02 ? stub[i] : 0;
       put(vox, b + 7, px[i], base + 0.017 * sb, pz[i], 0.022 * (sb ? 1 : 0), 0.034 * sb, 0.022 * (sb ? 1 : 0));
@@ -1358,16 +1397,16 @@ function createScene() {
   }
 
   function layout() {
-    const w = root.clientWidth, hh = root.clientHeight;
+    const w = visual.clientWidth, hh = visual.clientHeight;
     if (!w || !hh) return false;
     if (w !== view.w || hh !== view.h) {
       view.w = w; view.h = hh;
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
     }
-    const rr = root.getBoundingClientRect(), sr = slotEl.getBoundingClientRect();
+    const rr = visual.getBoundingClientRect(), sr = slotEl.getBoundingClientRect();
     const cx = sr.left - rr.left + sr.width / 2, cy = sr.top - rr.top + sr.height / 2;
-    const s = clamp(Math.min(sr.width * 0.9, sr.height) * 0.34, 44, 230);
+    const s = clamp(Math.min(sr.width * 0.92, sr.height * .88) * 0.46, 44, 330);
     if (!view.ready) { view.cx = cx; view.cy = cy; view.s = s; view.ready = true; }
     else { view.cx += (cx - view.cx) * 0.2; view.cy += (cy - view.cy) * 0.2; view.s += (s - view.s) * 0.2; }
     const unitPx = hh / (2 * CAM_DIST * Math.tan(FOV * DEG / 2));
@@ -1450,7 +1489,7 @@ function createScene() {
     canvas.classList.add('is-dragging');
   });
   canvas.addEventListener('pointermove', e => {
-    const r = root.getBoundingClientRect();
+    const r = visual.getBoundingClientRect();
     ptr.x = clamp((e.clientX - r.left) / r.width * 2 - 1, -1, 1); ptr.y = clamp((e.clientY - r.top) / r.height * 2 - 1, -1, 1);
     if (!drag.on || e.pointerId !== drag.id) return;
     const now = performance.now(), ddt = Math.max(1, now - drag.lt);
@@ -1478,7 +1517,7 @@ function createScene() {
   });
   root.addEventListener('pointermove', e => {
     if (e.target === canvas) return;
-    const r = root.getBoundingClientRect();
+    const r = visual.getBoundingClientRect();
     ptr.x = clamp((e.clientX - r.left) / r.width * 2 - 1, -1, 1); ptr.y = clamp((e.clientY - r.top) / r.height * 2 - 1, -1, 1);
   });
 
@@ -1518,12 +1557,13 @@ function createMascot() {
     b.x = clamp(e.clientX - b.ox, -b.w * 0.4, rw - b.w * 0.6);
     b.y = clamp(e.clientY - b.oy, 0, rh - b.h);
   });
-  const release = () => {
+  const release = event => {
     if (!b.held) return;
     b.held = false; el.classList.remove('is-held');
     if (performance.now() - b.lt > 120) b.vx = b.vy = 0;
     b.vx = clamp(b.vx, -1800, 1800); b.vy = clamp(b.vy, -1800, 1800);
     b.va += b.vx * 0.004;
+    if (event?.type === 'pointerup' && Math.hypot(b.vx,b.vy) > 420) document.dispatchEvent(new CustomEvent('neugrac:throw', { detail:{ speed:Math.hypot(b.vx,b.vy) } }));
   };
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
@@ -1688,4 +1728,4 @@ window.MusuqParcela = {
   play(on) { state.playing = on !== false; renderDynamic(true); }
 };
 
-})().catch(error => { console.error('Interactive module failed', error); const message = document.querySelector('.ma-nogl'); if (message) { message.hidden = false; message.textContent = 'No se pudo cargar la vista interactiva. Recarga para reintentar.'; } });
+})().catch(error => { console.error('Interactive module failed', error); const message = document.querySelector('.ma-nogl'); if (message) { message.hidden = false; message.textContent = CampoI18n.t('integrated.loadError'); } });

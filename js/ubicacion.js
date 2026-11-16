@@ -4,14 +4,15 @@
   No bloquea por precisión: si la ubicación es aproximada, lo indica.
 */
 const Ubicacion = (() => {
-  const OPCIONES_GPS = {
-    enableHighAccuracy: true,
-    timeout: 20000,
-    maximumAge: 0
-  };
   const PRECISION_IDEAL_M = 100;
+  async function permiso() {
+    if (!window.isSecureContext) return 'inseguro';
+    if ((document.permissionsPolicy || document.featurePolicy)?.allowsFeature('geolocation') === false) return 'politica';
+    try { return (await navigator.permissions.query({ name: 'geolocation' })).state; }
+    catch { return 'desconocido'; }
+  }
 
-  function obtenerPosicion() {
+  function solicitar(options) {
     return new Promise((resolve, reject) => {
       if (!('geolocation' in navigator)) {
         return reject(new Error('SIN_SOPORTE'));
@@ -28,19 +29,26 @@ const Ubicacion = (() => {
                        : 'NO_DISPONIBLE';
           reject(new Error(motivo));
         },
-        OPCIONES_GPS
+        options
       );
     });
   }
+  async function obtenerPosicion() {
+    const state = await permiso();
+    if (state === 'inseguro') throw Error('CONTEXTO_INSEGURO');
+    if (state === 'politica') throw Error('POLITICA_BLOQUEADA');
+    if (state === 'denied') throw Error('PERMISO_NEGADO');
+    try { return await solicitar({ enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }); }
+    catch (error) {
+      if (!['TIEMPO_AGOTADO', 'NO_DISPONIBLE'].includes(error.message)) throw error;
+      return solicitar({ enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 });
+    }
+  }
 
   async function altitudDe(lat, lon) {
-    const r = await fetch(
-      `/api/elevation?lat=${lat}&lon=${lon}`
-    );
-    if (!r.ok) throw new Error('ALTITUD_FALLA');
-    const j = await r.json();
+    const j = await CampoApi.request(`/elevation?lat=${lat}&lon=${lon}`, { signal: AbortSignal.timeout(5000) });
     const alt = j.elevation && j.elevation[0];
-    if (alt == null) throw new Error('ALTITUD_VACIA');
+    if (!Number.isFinite(alt)) throw new Error('ALTITUD_VACIA');
     return Math.round(alt);
   }
 
@@ -57,5 +65,5 @@ const Ubicacion = (() => {
     };
   }
 
-  return { obtenerPosicion, altitudDe, activar };
+  return { obtenerPosicion, altitudDe, activar, permiso };
 })();

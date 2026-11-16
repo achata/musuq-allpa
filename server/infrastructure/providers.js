@@ -45,11 +45,12 @@ function createProviders(get, cache) {
     },
     search(q, provider = 'photon') {
       return provider === 'nominatim'
-        ? cached(`search:nom:${q}`, `https://nominatim.openstreetmap.org/search?${new URLSearchParams({ q: q + ', Perú', format: 'json', limit: '8', 'accept-language': 'es' })}`)
-        : cached(`search:photon:${q}`, `https://photon.komoot.io/api/?${new URLSearchParams({ q, limit: '20', lang: 'es' })}`);
+        ? cached(`search:nom:${q}`, `https://nominatim.openstreetmap.org/search?${new URLSearchParams({ q, countrycodes: 'pe', format: 'json', limit: '8', 'accept-language': 'en' })}`)
+        // The public Photon instance rejects lang=es. Its default keeps local place names.
+        : cached(`search:photon:${q}`, `https://photon.komoot.io/api/?${new URLSearchParams({ q, limit: '8', countrycode: 'PE', lang: 'en' })}`);
     },
     reverse(lat, lon) {
-      return cached(`reverse:${lat}:${lon}`, `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=12&accept-language=es`);
+      return cached(`reverse:${lat}:${lon}`, `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=12&accept-language=en`);
     }
   };
 }

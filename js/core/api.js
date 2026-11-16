@@ -1,3 +1,4 @@
+try { document.documentElement.lang = localStorage.getItem('musuq.lang') || 'es'; } catch {}
 window.CampoApi = (() => {
   const base = window.CAMPO_API_BASE || '/api';
   async function request(path, { body, signal } = {}) {
@@ -8,6 +9,6 @@ window.CampoApi = (() => {
     if (!response.ok) { const error = new Error(data.code || 'SERVICIO'); error.code = data.code; throw error; }
     return data;
   }
-  const at = (route, lat, lon) => request(`/${route}?${new URLSearchParams({ lat, lon })}`);
+  const at = (route, lat, lon, options) => request(`/${route}?${new URLSearchParams({ lat, lon })}`, options);
   return { request, at, recommend: farm => request('/recommendations', { body: farm }) };
 })();

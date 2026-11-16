@@ -1,0 +1,105 @@
+/* Cube first. Page chrome and detailed data are available through Options. */
+body.campo-interactive{display:flex;height:100dvh;min-height:0;overflow:hidden;background:#0b132b;color:#f3f6ff}
+.campo-interactive .campo-header{flex:none;margin:0}
+.campo-context{position:relative;flex:none;z-index:25;padding:12px 20px;background:#101a35;color:#f3f6ff;border-bottom:1px solid #ffffff20}
+.campo-context-inner{max-width:1120px;margin:auto}
+.campo-context .context-eyebrow{font-size:14px;color:#06d6a0;margin:0 0 4px}
+.campo-context h1{font-size:26px;margin:0 0 10px;color:#fff;overflow-wrap:anywhere}
+.campo-context p{font-size:20px;color:#c8d4ea;line-height:1.5}
+.campo-context-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:760px}
+.campo-context-fields label{min-width:0;font-size:18px}
+.campo-context select{display:block;width:100%;min-width:0;height:48px;margin-top:4px;padding:8px 26px 8px 10px;background:#0b132b;color:#fff;border:1px solid #465574;border-radius:10px;font:18px system-ui;text-overflow:ellipsis;color-scheme:dark}
+.campo-survey-details>summary{min-height:44px;padding:8px 0;font-size:18px;cursor:pointer}
+.campo-survey-content{position:fixed;inset:var(--context-bottom,290px) 0 0;z-index:40;background:#101a35;padding:0;font-size:21px}
+.campo-survey-content>.campo-screen-stage{height:100%}.campo-survey-content .campo-screen-track{padding:20px;max-width:800px;margin:auto}
+.campo-context-links{display:flex;gap:10px;flex-wrap:wrap}.campo-context a{color:#06d6a0;display:inline-flex;align-items:center;min-height:44px}
+body.campo-interactive .ma{display:flex;flex-direction:column;flex:1;min-height:0;height:auto;width:100%;max-width:none;margin:0;overflow:hidden;font-size:18px}
+.ma .ma-top{position:relative;inset:auto;z-index:30;flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 20px;pointer-events:auto;background:#0b132b;border-bottom:1px solid #ffffff18}
+.ma-workspace-heading{font:600 18px system-ui}.ma-workspace-heading small{font-size:14px;color:#ffd166;margin-left:12px}
+.ma .ma-ctrl{display:flex;gap:10px}
+.ma .ma-btn{height:auto;min-height:44px;font:600 18px/1.3 system-ui;letter-spacing:0;text-transform:none;white-space:normal;border-radius:12px;padding:8px 14px}
+.ma .ma-btn--role{background:#06d6a0;color:#0b132b}.ma .ma-btn--role[aria-expanded=true]{background:#203150;color:#06d6a0}
+.ma-workspace,.ma[data-role=agronomist] .ma-workspace{position:relative;display:block;flex:1;min-height:0}
+.ma-visual{position:relative;width:100%;height:100%;min-height:0;overflow:hidden}
+.ma .ma-ui,.ma[data-role=agronomist] .ma-ui{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);transition:none}
+.ma .ma-stage{height:100%;padding:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+.ma .ma-slot{grid-row:1;grid-column:1;min-height:0}
+.ma-bottom{grid-row:2;grid-column:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;width:min(100%,1080px);margin:0 auto;padding:0 20px max(16px,env(safe-area-inset-bottom));pointer-events:none}
+.ma .ma-bottom .ma-timer,.ma .ma-bottom .ma-guide{grid-row:auto;grid-column:auto;position:relative;align-self:stretch;justify-self:auto;display:block;width:auto;max-width:none;margin:0;padding:18px 20px;background:#101a35ed;border:1px solid #a8c8ff26;border-radius:20px;pointer-events:auto;backdrop-filter:blur(14px)}
+.ma .ma-timer::before{display:none}
+.ma .ma-phase{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:8px}
+.ma .ma-phase-name{font:600 28px/1.1 var(--f-display)}
+.ma .ma-clock{grid-column:1;grid-row:2;display:flex;gap:10px;text-align:left;white-space:normal}
+.ma .ma-day,.ma .ma-camp{font-size:16px;line-height:1.3}
+.ma .ma-play{grid-column:2;grid-row:1 / span 2;width:44px;height:44px;border-radius:12px;background:#233254}
+.ma .ma-until{display:none}.ma .ma-bar{margin-top:14px;gap:6px}.ma .ma-track{height:6px}
+.ma .ma-seg-lab b{font-size:15px}.ma .ma-seg-lab span{font-size:13px}
+.ma-step-controls{display:flex;gap:10px;margin-top:12px}.ma-step-controls button{flex:1;min-height:44px;padding:8px;border:1px solid #465574;border-radius:10px;background:#14213c;color:#fff;font:600 17px system-ui;cursor:pointer}
+.ma-step-controls button:disabled{opacity:.35}.ma-step-controls #ma-next{background:#06d6a0;color:#0b132b}
+.ma .ma-bottom .ma-ng{display:block;position:absolute;right:20px;top:-108px;width:92px;height:118px}
+.ma .ma-bubble{max-width:none;margin:0;padding:0;background:none;border:0;border-radius:0;backdrop-filter:none;font:400 20px/1.45 system-ui;color:#f3f6ff}
+.ma .ma-bubble b{display:block;margin-bottom:6px;font:650 18px system-ui;color:#ffd166}
+.ma #ma-tip{margin:0;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;min-height:4.1em}
+.ma-tip-controls{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px;font:14px system-ui;color:#b9c4e4}
+.ma-tip-controls button{width:36px;min-height:36px;padding:0;background:transparent;border:1px solid #ffffff28;border-radius:10px;color:#e8f1ff;font:28px system-ui;cursor:pointer}
+#ma-radio-status{margin:8px 0 0;font:14px/1.35 system-ui;color:#8dafc8}
+.ma .ma-ng-sprite{z-index:15;opacity:1;pointer-events:auto;outline-offset:4px}
+.ma-ng-sprite.radio-holding::before{content:'';position:absolute;inset:-10px;border:3px solid #06d6a0;border-radius:50%;animation:radio-hold 3s linear forwards;pointer-events:none}
+.ma[data-radio=on] .ma-ng-sprite img{filter:drop-shadow(0 0 18px #06d6a088)}
+.ma[data-radio=on] #ma-radio-status{color:#06d6a0}
+@keyframes radio-hold{from{transform:scale(.6);opacity:.2}to{transform:scale(1.1);opacity:1}}
+.ma .ma-credit{top:70px;left:20px;bottom:auto;font-size:12px;opacity:.65}
+.ma-crop-caption{position:absolute;left:20px;top:20px;display:grid;gap:6px;pointer-events:none;color:#e4f3ff;max-width:60%;font:600 18px/1.3 system-ui;text-shadow:0 2px 12px #0b132b}
+.ma-crop-caption small{font-size:14px;font-weight:400;color:#b9c4e4}
+.ma-immersive-controls{position:absolute;right:16px;top:16px;z-index:60;display:flex;gap:8px}
+.ma-quiet-button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #ffffff30;border-radius:14px;background:#0b132b99;color:#edf6ff;font:24px system-ui;text-decoration:none;cursor:pointer;backdrop-filter:blur(10px)}
+body.campo-immersive .campo-header,body.campo-immersive .campo-context,body.campo-immersive .ma-top{display:none}
+body.campo-immersive .ma{position:fixed;inset:0;height:100dvh;width:100vw}
+body.campo-immersive .ma-step-controls,body.campo-immersive .ma-seg-lab,body.campo-immersive .ma-camp{display:none}
+body.campo-immersive .ma-credit{display:none}
+body.campo-immersive .ma-crop-caption{top:24px;left:20px;max-width:calc(100% - 200px)}
+body.campo-interactive:has(#interactive-empty:not([hidden])) .campo-context,body.campo-interactive:has(#interactive-empty:not([hidden])) .campo-header{display:flex}
+#interactive-loading{position:fixed;inset:0;z-index:65;display:grid;align-content:center;justify-items:center;gap:20px;background:#0b132b;color:#dceaff;font:20px system-ui}
+#interactive-loading img{width:120px;height:150px;object-fit:contain}
+.ma .ma-agro{position:absolute;inset:0;z-index:35;display:none;opacity:1;visibility:visible;transition:none;max-height:none;overflow:hidden;background:#101a35;backdrop-filter:none}
+.ma[data-role=agronomist] .ma-agro{display:block}.ma .ma-agro-cap{display:none}.ma .ma-agro>.campo-screen-stage{height:100%}
+.ma .ma-agro-in{display:block;max-width:1000px;margin:auto;padding:24px;font-size:20px}
+.ma-agro-in>*{margin-bottom:20px}.ma .ma-agro h2{font-size:27px}.ma .ma-agro h3{font-size:23px}
+.ma .ma-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ma .ma-meta dt,.ma .ma-simnote,.ma .ma-kpi-lab,.ma .ma-json a{font-size:18px}
+.ma .ma-meta dd,.ma .ma-reco p,.ma .ma-soil li{font-size:20px;overflow-wrap:anywhere}
+.ma .ma-reco b,.ma .ma-soil-foot{font-size:17px}.ma .ma-table{font-size:18px}.ma .ma-scroll{overflow-x:auto}
+.ma-table-hint{font:16px system-ui;color:#b9c4e4}.ma .campo-scroll-cue{background:#1c2c49ed;color:#a8e7d8}
+@media(max-width:600px){
+ .ma-bottom{gap:10px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
+ .ma .ma-bottom .ma-timer,.ma .ma-bottom .ma-guide{padding:12px;border-radius:16px}
+ .ma .ma-phase-name{font-size:22px}.ma .ma-day{font-size:14px}.ma .ma-phase{grid-template-columns:minmax(0,1fr) 40px;gap:6px}
+ .ma .ma-play{width:40px;height:44px}.ma .ma-bar{margin-top:12px}
+ .ma .ma-bubble{font-size:17px;line-height:1.4}.ma .ma-bubble b{font-size:16px}
+ .ma #ma-tip{min-height:5.5em;-webkit-line-clamp:4}
+ .ma .ma-bottom .ma-ng{top:-96px;right:14px;width:76px;height:98px}
+ .ma-tip-controls{margin-top:4px;gap:8px}.ma-tip-controls button{min-height:32px;width:32px}
+ #ma-radio-status{font-size:12px;line-height:1.3;margin-top:6px}
+ .ma-crop-caption{font-size:16px}.ma-crop-caption small{font-size:12px}
+ body.campo-immersive .ma-crop-caption{max-width:calc(100% - 170px);left:14px;top:20px}
+ .ma-immersive-controls{top:12px;right:10px;gap:6px}.ma-quiet-button{width:42px;height:44px}
+ .campo-context{padding:10px 16px}.campo-context h1{font-size:23px}.campo-context label{font-size:16px}.campo-context select{font-size:18px}
+ .ma .ma-top{padding:8px 16px}.ma-workspace-heading{display:none}.ma .ma-ctrl{width:100%}.ma .ma-ctrl>*{flex:1}
+ .ma .ma-agro-in{padding:18px 16px}
+ .ma .ma-seg-lab b{font-size:12px}.ma .ma-seg-lab span{display:none}
+}
+@media(max-height:600px){
+ .ma-bottom{max-width:900px}.ma .ma-bottom .ma-timer,.ma .ma-bottom .ma-guide{padding:10px 14px}
+ .ma #ma-tip{min-height:2.7em;-webkit-line-clamp:2}.ma .ma-bubble{font-size:16px}
+ .ma-tip-controls{margin-top:2px}.ma .ma-bottom .ma-ng{width:65px;height:84px;top:-82px}
+ #ma-radio-status{font-size:12px}.ma .ma-phase-name{font-size:22px}
+ .ma .ma-guide b{margin-bottom:4px}.ma .ma-day{font-size:14px}
+ body:not(.campo-immersive) .campo-context-fields{display:none}
+}
+.campo-context-fields label{display:flex;flex-direction:column}
+.campo-context-fields label>span{flex:1}
+.campo-context-fields select{flex:none}
+.ma-immersive-controls{pointer-events:none}.ma-quiet-button{pointer-events:auto}
+body.campo-interactive:not(.campo-immersive) .ma-top{padding-right:76px}
+body.campo-interactive:not(.campo-immersive) .ma-immersive-controls{top:8px;right:16px}
+body.campo-interactive:not(.campo-immersive) :is(#ma-exit,#ma-fullscreen){display:none}

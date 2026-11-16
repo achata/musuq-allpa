@@ -4,12 +4,16 @@
   - Resto de archivos: primero el caché, para abrir rápido sin señal.
   Al cambiar archivos, sube CACHE_VERSION.
 */
-const CACHE_VERSION = 'campo-v12';
+const CACHE_VERSION = 'musuq-v1.0.2-20261116';
+
+const ASSET_RELEASE = '1.0.2';
 
 const ARCHIVOS = [
-  'js/ui/motion.js',
-  'js/core/api.js', 'js/core/i18n.js', 'js/ui/language-switch.js', 'js/ui/shell.js',
-  'shared/domain/climate.js', 'css/components.css', 'data/i18n.json', 'data/interactive.json', 'js/features/interactive/scene.js',
+  'data/brand/neugrac.webp', 'data/brand/favicon.ico', 'data/brand/favicon-32.png', 'data/brand/apple-touch-icon.png', 'data/brand/musuq-allpa.jpg', 'js/features/interactive/farm-context.js', 'js/features/interactive/experience.js', 'js/features/interactive/radio.js',
+  'js/vendor/three.r128.min.js', 'js/vendor/leaflet.1.9.4.min.js', 'css/vendor/leaflet.1.9.4.min.css',
+  'js/ui/motion.js', 'js/ui/screens.js',
+  'js/core/api.js', 'js/core/maps.js', 'js/core/i18n.js', 'js/ui/language-switch.js', 'js/ui/shell.js',
+  'shared/domain/climate.js', 'css/components.css', 'css/interactive.css', 'data/i18n.json', 'data/interactive.json', 'js/features/interactive/scene.js', 'js/features/interactive/context.js',
   './',
   'index.html',
   'bienvenida.html',
@@ -64,6 +68,10 @@ self.addEventListener('fetch', e => {
   if (url.pathname.startsWith('/api/')) return;
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
 
+  if (url.searchParams.has('release') && url.searchParams.get('release') !== ASSET_RELEASE) { e.respondWith(fetch(req)); return; }
+
+  // Versioned URLs bypass older workers; the current worker reuses its own precache offline.
+  const cacheKey = (url.searchParams.has('v') || url.searchParams.has('rev') || url.searchParams.has('release')) && /^\/(js|css|shared\/domain|data)\//.test(url.pathname) ? url.pathname : req;
   const esPagina = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
 
   if (esPagina) {
@@ -77,6 +85,6 @@ self.addEventListener('fetch', e => {
         .catch(() => caches.match(req))
     );
   } else {
-    e.respondWith(caches.match(req).then(r => r || fetch(req)));
+    e.respondWith(caches.match(cacheKey).then(r => r || fetch(req)));
   }
 });

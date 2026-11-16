@@ -10,7 +10,8 @@ window.LanguageSwitch = class LanguageSwitch {
     CampoI18n.ready.then(this.render).catch(() => { button.textContent = 'Español'; button.disabled = true; });
   }
   render() {
-    this.button.textContent = CampoI18n.catalog._meta.order.map(code => code === CampoI18n.language ? `[${CampoI18n.catalog[code].lang.code}]` : CampoI18n.catalog[code].lang.code).join(' · ');
+    this.button.textContent = CampoI18n.t('lang.code');
+    this.button.title = CampoI18n.t('controls.lang.hint') + ': ' + CampoI18n.t('lang.name');
     this.button.setAttribute('aria-label', `${CampoI18n.t('controls.lang.hint')}: ${CampoI18n.t('lang.name')}`);
   }
 };

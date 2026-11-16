@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script src="js/core/api.js"></script>
-<script src="shared/domain/climate.js"></script>
+<link rel="icon" href="data/brand/favicon.ico?release=1.0.2" sizes="any">
+<link rel="icon" type="image/png" href="data/brand/favicon-32.png?release=1.0.2" sizes="32x32">
+<link rel="apple-touch-icon" href="data/brand/apple-touch-icon.png?release=1.0.2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});</script>
+<script src="js/core/api.js?release=1.0.2"></script>
+<script src="shared/domain/climate.js?release=1.0.2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#24523a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Ubica tu parcela · campo</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="js/almacen.js"></script>
-<script src="js/parcela-datos.js"></script>
-<script src="js/ruta.js"></script>
-<script src="js/ubicacion.js"></script>
+<link rel="stylesheet" href="css/vendor/leaflet.1.9.4.min.css?release=1.0.2">
+<script src="js/vendor/leaflet.1.9.4.min.js?release=1.0.2"></script>
+<script src="js/almacen.js?release=1.0.2"></script>
+<script src="js/parcela-datos.js?release=1.0.2"></script>
+<script src="js/ruta.js?release=1.0.2"></script>
+<script src="js/ubicacion.js?release=1.0.2"></script>
+<script src="js/core/maps.js?release=1.0.2"></script>
 <style>
   :root{
     --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
@@ -112,10 +117,11 @@
   input, select, textarea{font-size:16px}
   body{min-height:100dvh}
 </style>
-<link rel="stylesheet" href="css/components.css">
-<script src="js/core/i18n.js" defer></script>
-<script src="js/ui/language-switch.js" defer></script>
-<script src="js/ui/shell.js" defer></script>
+<link rel="stylesheet" href="css/components.css?release=1.0.2">
+<script src="js/core/i18n.js?release=1.0.2" defer></script>
+<script src="js/ui/language-switch.js?release=1.0.2" defer></script>
+<script src="js/ui/screens.js?release=1.0.2" defer></script>
+<script src="js/ui/shell.js?release=1.0.2" defer></script>
 </head>
 <body>
 
@@ -127,39 +133,54 @@
 
 <section id="selectorUbicacion" class="selector">
   <div class="selector-contenido">
-    <h2>Elige la forma más fácil para ti</h2>
-    <p class="intro">Puedes usar la ubicación de tu celular o buscar tu comunidad, distrito o provincia por nombre.</p>
-
     <button id="btnGpsInicial" class="opcion-ubicacion" type="button">
       <span class="icono">📍</span>
       <span class="texto">
         <strong>Usar mi GPS</strong>
-        <small>Ubicaremos el punto donde estás. Necesitas permitir el acceso a tu ubicación.</small>
+        <small>Permite tu ubicación para encontrar tu terreno.</small>
       </span>
     </button>
     <p id="avisoGps" class="ayuda-busqueda" hidden></p>
 
-    <div class="buscador">
-      <label for="buscar">O escribe el nombre de tu ubicación</label>
+    <form class="buscador" id="formBuscar" role="search">
+      <label for="buscar">Buscar mi localidad</label>
       <input id="buscar" type="search" placeholder="Ej.: Huamancaca, Puno, Chancay…" autocomplete="off" aria-controls="sugerencias">
-      <p class="ayuda-busqueda">Escribe al menos 2 letras. Te mostraremos varias localidades mientras escribes; elige una para revisar el punto en el mapa.</p>
+      <button id="btnBuscar" class="confirmar" type="submit">Buscar localidad</button>
+      <p class="ayuda-busqueda">Escribe al menos 2 letras y elige un resultado.</p>
       <ul id="sugerencias" aria-live="polite"></ul>
-    </div>
+    </form>
+    <button id="btnManual" class="opcion-ubicacion" type="button">
+      <span class="icono" aria-hidden="true">🗺️</span>
+      <span class="texto"><strong>Buscar en el mapa</strong><small>Mueve el mapa y coloca el pin sobre tu parcela.</small></span>
+    </button>
   </div>
 </section>
 
 <div id="mapaVista" class="mapa-wrap" hidden>
   <div id="mapa"></div>
-  <div class="pin" aria-hidden="true">📍</div>
-  <button id="btnGps" class="gps">📍 Usar mi GPS</button>
+  <p id="avisoMapa" class="mapa-aviso" role="status" hidden></p>
+  <div class="pin" aria-hidden="true"><svg viewBox="0 0 32 44" width="40" height="56"><path d="M16 42S2 25 2 16a14 14 0 1 1 28 0c0 9-14 26-14 26Z" fill="#ef476f" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="#fff"/></svg></div>
+  <button id="btnGps" class="gps">Usar mi GPS</button>
+  <div class="mapa-zoom"><button id="mapZoomIn" type="button" aria-label="Acercar mapa">+</button><button id="mapZoomOut" type="button" aria-label="Alejar mapa">−</button></div>
 </div>
 
 <footer id="pieMapa" hidden>
   <div id="estado" class="estado"></div>
-  <button id="btnConfirmar" class="confirmar">✅ Esta es mi parcela</button>
+  <p id="coordenadas" class="ayuda-busqueda"></p>
+  <button id="btnConfirmar" class="confirmar">Esta es mi parcela</button>
   <button id="btnCambiar" class="cambiar" type="button">← Elegir otra forma de ubicarme</button>
 </footer>
 
-<script src="js/ubicar.chacra.js"></script>
+<dialog id="gpsHelp" class="gps-help" aria-labelledby="gpsHelpTitle">
+  <button id="gpsHelpClose" class="gps-help-close" type="button" data-i18n="gps.close">Cerrar</button>
+  <h2 id="gpsHelpTitle" data-i18n="gps.title">Activa el permiso de ubicación</h2>
+  <p id="gpsHelpMessage"></p>
+  <ol id="gpsHelpSteps"></ol>
+  <div id="gpsNative"></div>
+  <p id="gpsHelpStatus" role="status"></p>
+  <button id="gpsCheck" class="confirmar" type="button" data-i18n="gps.check">Ya lo habilité. Comprobar GPS</button>
+  <button id="gpsManual" class="cambiar" type="button" data-i18n="gps.manual">Prefiero ubicarme en el mapa</button>
+</dialog>
+<script src="js/ubicar.chacra.js?release=1.0.2"></script>
 </body>
 </html>

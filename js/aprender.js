@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const text = button.closest(".lesson-card").querySelector("p").textContent;
       window.speechSynthesis.cancel();
       const speech = new SpeechSynthesisUtterance(text);
-      speech.lang = "es-PE";
+      speech.lang = CampoI18n.t('lang.locale');
       window.speechSynthesis.speak(speech);
       status.textContent = "Reproduciendo el consejo.";
       status.className = "notice";

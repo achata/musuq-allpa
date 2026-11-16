@@ -153,7 +153,16 @@
   migrateFarms();
 
   function todas() {
-    return readFarm(FARM_KEYS.parcels) || [];
+    const parcels = readFarm(FARM_KEYS.parcels);
+    return Array.isArray(parcels) ? parcels.filter(p => p && typeof p.id === 'string') : [];
+  }
+
+  function registrada(parcela) {
+    const u = parcela?.ubicacion;
+    return !!(u && Number.isFinite(u.lat) && Math.abs(u.lat) <= 90
+      && Number.isFinite(u.lon) && Math.abs(u.lon) <= 180
+      && ['lluvia', 'manguera', 'aspersor', 'goteo'].includes(parcela.perfil?.riego)
+      && ['cultivos', 'insumos', 'cosecha'].every(k => Array.isArray(parcela.perfil[k])));
   }
 
   function activa() {
@@ -188,6 +197,7 @@
   }
 
   function eliminar(id) {
+    if (readFarm(FARM_KEYS.draft)?.parcelaId === id) borrarBorrador();
     const lista = todas().filter(parcela => parcela.id !== id);
     writeFarm(FARM_KEYS.parcels, lista);
     if (readFarm(FARM_KEYS.active) === id) {
@@ -204,16 +214,19 @@
   function guardarPerfilActivo(perfil) {
     const parcela = activa();
     if (!parcela) return null;
+    delete parcela.recomendacion;
+    delete parcela.interactive;
     parcela.perfil = { ...perfil, actualizado: new Date().toISOString() };
     return guardar(parcela);
   }
 
   function borrador() {
-    return readFarm(FARM_KEYS.draft);
+    const draft = readFarm(FARM_KEYS.draft);
+    return draft?.parcelaId && draft.parcelaId !== activa()?.id ? null : draft;
   }
 
   function guardarBorrador(campos) {
-    writeFarm(FARM_KEYS.draft, { ...(borrador() || {}), ...campos });
+    writeFarm(FARM_KEYS.draft, { ...(borrador() || {}), ...campos, parcelaId: activa()?.id });
   }
 
   function borrarBorrador() {
@@ -229,6 +242,7 @@
     saveSowingProgress,
     clearSowingProgress,
     todas,
+    registrada,
     activa,
     activar,
     guardar,

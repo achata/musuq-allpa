@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<script src="js/core/api.js"></script>
-<script src="shared/domain/climate.js"></script>
+<link rel="icon" href="data/brand/favicon.ico?release=1.0.2" sizes="any">
+<link rel="icon" type="image/png" href="data/brand/favicon-32.png?release=1.0.2" sizes="32x32">
+<link rel="apple-touch-icon" href="data/brand/apple-touch-icon.png?release=1.0.2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});</script>
+<script src="js/core/api.js?release=1.0.2"></script>
+<script src="shared/domain/climate.js?release=1.0.2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#24523a">
 <title>Campaña pasada · campo</title>
-<script src="js/almacen.js"></script>
-<script src="js/ruta.js"></script>
+<script src="js/almacen.js?release=1.0.2"></script>
+<script src="js/ruta.js?release=1.0.2"></script>
 <script>
   if (!Almacen.activa()) location.replace('ubicar-chacra.html');
 </script>
@@ -37,10 +41,11 @@
   .principal{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
   .secundario{font:inherit; font-weight:700; min-height:52px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer; width:100%}
 </style>
-<link rel="stylesheet" href="css/components.css">
-<script src="js/core/i18n.js" defer></script>
-<script src="js/ui/language-switch.js" defer></script>
-<script src="js/ui/shell.js" defer></script>
+<link rel="stylesheet" href="css/components.css?release=1.0.2">
+<script src="js/core/i18n.js?release=1.0.2" defer></script>
+<script src="js/ui/language-switch.js?release=1.0.2" defer></script>
+<script src="js/ui/screens.js?release=1.0.2" defer></script>
+<script src="js/ui/shell.js?release=1.0.2" defer></script>
 </head>
 <body>
 <main>
@@ -75,7 +80,7 @@ function render(){
     const c = catalogo.find(x => x.id === id);
     if (!c || !c.variedades || !c.variedades.length) return '';
     return `<div class="bloque">
-      <p>${window.CampoI18n?.catalog ? CampoI18n.t('survey.cropType', { crop: c.nombre.toLowerCase() }) : `¿Qué tipo de ${c.nombre.toLowerCase()} sembraste?`}</p>
+      <p>${window.CampoI18n?.catalog ? CampoI18n.t('survey.cropType', { crop: CampoI18n.crop(c.id, c.nombre) }) : `¿Qué tipo de ${c.nombre.toLowerCase()} sembraste?`}</p>
       <div class="chips">
         ${[...c.variedades, 'No sé'].map(v => `<button class="chip ${sel[id] === v ? 'on' : ''}" data-cultivo="${id}" data-variedad="${v}">${v}</button>`).join('')}
       </div>

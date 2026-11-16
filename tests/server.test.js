@@ -56,3 +56,16 @@ test('HTTP: CORS, validation, privacy, real cross-data use case and degraded NAS
   farm.perfil.cosecha = [13];
   assert.equal((await post()).status, 400);
 });
+
+test('search uses supported English provider settings and confines fallback results to Peru', async () => {
+  const urls = [];
+  const providers = createProviders(async url => { urls.push(new URL(url)); return {}; }, new MemoryCache());
+  await providers.search('Puno');
+  await providers.search('Puno', 'nominatim');
+  await providers.reverse(-15.84, -70.02);
+  assert.equal(urls[0].searchParams.get('lang'), 'en');
+  assert.equal(urls[0].searchParams.get('countrycode'), 'PE');
+  assert.equal(urls[1].searchParams.get('countrycodes'), 'pe');
+  assert.equal(urls[1].searchParams.get('accept-language'), 'en');
+  assert.equal(urls[2].searchParams.get('accept-language'), 'en');
+});

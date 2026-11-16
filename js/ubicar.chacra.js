@@ -13,6 +13,9 @@ let zonas = [];
 let temporizadorBusqueda = null;
 let controlBusqueda = null;
 let resultadosBusqueda = [];
+let lugarElegido = null;
+let ultimoMensaje;
+const texto = (key, vars) => CampoI18n.t('location.' + key, vars);
 
 /* ============ utilidades ============ */
 
@@ -32,11 +35,14 @@ function zonaMasCercana(lat, lon){
   return mejor ? { zona: mejor, km: Math.round(min) } : null;
 }
 
-function mensaje(texto, tipo = 'info'){
+function mensaje(contenido, tipo = 'info', key = null, vars = {}){
   const e = $('estado');
-  e.textContent = texto;
+  ultimoMensaje = { contenido, tipo, key, vars };
+  e.textContent = key ? texto(key, vars) : (window.CampoI18n?.text(contenido) || contenido);
+  e.setAttribute('data-localized-text', '');
   e.className = 'estado ' + tipo;
 }
+document.addEventListener('campo:language', () => { if (ultimoMensaje) { const {contenido,tipo,key,vars} = ultimoMensaje; mensaje(contenido,tipo,key,vars); } });
 
 function limpiarSugerencias(){
   $('sugerencias').replaceChildren();
@@ -61,11 +67,20 @@ function mostrarSugerencias(lugares){
     const boton = document.createElement('button');
     boton.type = 'button';
     boton.className = 'resultado';
+    boton.setAttribute('data-user-value', '');
     boton.textContent = lugar.nombre;
     boton.addEventListener('click', () => elegirLugar(indice));
     li.appendChild(boton);
     lista.appendChild(li);
   });
+  if (lugares.some(l => l.resolve)) {
+    const attribution = document.createElement('li');
+    attribution.className = 'maps-attribution';
+    attribution.setAttribute('translate', 'no');
+    attribution.setAttribute('data-user-value', '');
+    attribution.textContent = 'Google Maps';
+    lista.append(attribution);
+  }
 }
 
 function nombreLugar(propiedades){
@@ -86,48 +101,76 @@ async function buscarLugares(texto){
   cargando.textContent = 'Buscando localidades…';
   ul.appendChild(cargando);
 
-  try {
-    const url = `/api/search?q=${encodeURIComponent(texto)}`;
-    const respuesta = await fetch(url, { signal: controlBusqueda.signal });
-    if (!respuesta.ok) throw new Error('Photon ' + respuesta.status);
-    const datos = await respuesta.json();
-    const lugares = datos.features
+  const controller = controlBusqueda;
+  const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]);
+  const normalizar = datos => (datos.features || [])
       .filter(f => !f.properties.countrycode || f.properties.countrycode.toUpperCase() === 'PE')
       .map(f => ({
         nombre: nombreLugar(f.properties) || 'Ubicación encontrada',
         lat: f.geometry.coordinates[1],
         lon: f.geometry.coordinates[0]
-      }));
-    mostrarSugerencias(lugares);
+      })).filter(l => Number.isFinite(l.lat) && Number.isFinite(l.lon));
+  try {
+    if (await CampoMaps.isGoogle()) {
+      const lugares = await CampoMaps.search(texto, { signal });
+      if (!controller.signal.aborted) mostrarSugerencias(lugares);
+      return;
+    }
+    let lugares = [];
+    try {
+      lugares = normalizar(await CampoApi.request(`/search?q=${encodeURIComponent(texto)}`, { signal }));
+    } catch (error) { if (controller.signal.aborted) return; }
+    if (!lugares.length && !controller.signal.aborted) {
+      const datos = await CampoApi.request(`/search?provider=nominatim&q=${encodeURIComponent(texto)}`, { signal });
+      lugares = Array.isArray(datos) ? datos.map(l => ({ nombre: l.display_name, lat: +l.lat, lon: +l.lon })) : normalizar(datos);
+    }
+    if (!controller.signal.aborted) mostrarSugerencias(lugares.slice(0, 8));
   } catch (error) {
-    if (error.name === 'AbortError') return;
+    if (controller.signal.aborted) return;
     ul.replaceChildren();
     const aviso = document.createElement('li');
     aviso.className = 'sin-resultados';
-    aviso.textContent = 'El buscador no responde ahora. Revisa tu conexión o prueba con el GPS.';
+    aviso.textContent = 'El buscador no responde. Puedes usar el GPS o abrir el mapa para ubicar tu parcela.';
     ul.appendChild(aviso);
+  } finally {
+    document.dispatchEvent(new Event('campo:layout'));
   }
 }
 
-function mostrarMapa(lat, lon, zoom){
+async function mostrarMapa(lat, lon, zoom){
   $('selectorUbicacion').hidden = true;
   $('mapaVista').hidden = false;
   $('pieMapa').hidden = false;
   $('ayuda').textContent = 'Mueve el mapa hasta que el pin quede sobre tu parcela.';
 
-  if (!mapa) iniciarMapa(lat, lon, zoom);
-  else mapa.setView([lat, lon], zoom);
-  setTimeout(() => mapa.invalidateSize(), 100);
+  $('btnConfirmar').disabled = true;
+  if (!mapa) await iniciarMapa(lat, lon, zoom);
+  else mapa.setView(lat, lon, zoom);
+  centro = { lat, lon };
+  actualizarCoordenadas();
+  requestAnimationFrame(() => mapa?.resize());
+  $('btnConfirmar').disabled = false;
 }
 
-function elegirLugar(indice){
+async function elegirLugar(indice){
   const lugar = resultadosBusqueda[indice];
   if (!lugar) return;
   if (controlBusqueda) controlBusqueda.abort();
-  $('buscar').value = lugar.nombre;
-  limpiarSugerencias();
-  mostrarMapa(lugar.lat, lugar.lon, 15);
-  mensaje(`Encontramos ${lugar.nombre}. Revisa el pin y muévelo si hace falta.`, 'info');
+  try {
+    if (lugar.resolve) Object.assign(lugar, await lugar.resolve());
+    $('buscar').value = lugar.nombre;
+    lugarElegido = lugar.nombre;
+    limpiarSugerencias();
+    await mostrarMapa(lugar.lat, lugar.lon, 15);
+    mensaje('', 'info', 'found', { place: lugar.nombre });
+  } catch {
+    if ($('mapaVista').hidden) {
+      const aviso = document.createElement('li');
+      aviso.className = 'sin-resultados';
+      aviso.textContent = texto('placeUnavailable');
+      $('sugerencias').replaceChildren(aviso);
+    } else mostrarErrorMapa();
+  }
 }
 
 /* ============ datos y mapa ============ */
@@ -140,21 +183,29 @@ async function cargarZonas(){
   }
 }
 
-function iniciarMapa(lat, lon, zoom){
-  mapa = L.map('mapa', { zoomControl: false }).setView([lat, lon], zoom);
-  L.control.zoom({ position: 'bottomright' }).addTo(mapa);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '© OpenStreetMap'
-  }).addTo(mapa);
-
+async function iniciarMapa(lat, lon, zoom){
   centro = { lat, lon };
-  mapa.on('move', () => {
-    const c = mapa.getCenter();
-    centro = { lat: c.lat, lon: c.lng };
+  mapa = await CampoMaps.create($('mapa'), lat, lon, zoom, c => {
+    centro = c;
+    actualizarCoordenadas();
   });
+  $('mapaVista').dataset.provider = mapa.provider;
+  new ResizeObserver(() => mapa?.resize()).observe($('mapaVista'));
+}
 
-  setTimeout(() => mapa.invalidateSize(), 200);
+function mostrarErrorMapa(){
+  $('avisoMapa').hidden = false;
+  $('avisoMapa').textContent = texto('mapUnavailable');
+  $('btnConfirmar').disabled = true;
+}
+document.addEventListener('campo:map-error', mostrarErrorMapa);
+document.addEventListener('campo:tiles-error', () => { $('avisoMapa').hidden = false; $('avisoMapa').textContent = texto('tilesUnavailable'); });
+document.addEventListener('campo:tiles-ready', () => { $('avisoMapa').hidden = true; });
+$('mapZoomIn').addEventListener('click', () => mapa?.zoom(1));
+$('mapZoomOut').addEventListener('click', () => mapa?.zoom(-1));
+
+function actualizarCoordenadas(){
+  if (centro) $('coordenadas').textContent = `${centro.lat.toFixed(5)}, ${centro.lon.toFixed(5)}`;
 }
 
 /* ============ GPS (solo cuando el usuario lo elige) ============ */
@@ -165,16 +216,59 @@ const MENSAJES_GPS = {
   SIN_SOPORTE:    'Tu celular no permite usar la ubicación aquí. Mueve el mapa a mano.',
   NO_DISPONIBLE:  'No pudimos obtener tu ubicación. Revisa que el GPS esté prendido.'
 };
+let gpsBlockedReason = 'denied';
+function renderGpsHelp() {
+  const t = key => CampoI18n.t('gps.' + key);
+  const platform = /iPad|iPhone/.test(navigator.userAgent) ? 'ios' : /Android/.test(navigator.userAgent) ? 'android' : 'desktop';
+  $('gpsHelpMessage').textContent = t(gpsBlockedReason === 'denied' ? 'denied' : gpsBlockedReason);
+  $('gpsHelpSteps').replaceChildren(...CampoI18n.t('gps.steps.' + platform).map(text => { const li = document.createElement('li'); li.textContent = text; return li; }));
+  $('gpsHelpStatus').textContent = '';
+}
+function showGpsHelp(reason = 'denied') {
+  gpsBlockedReason = reason;
+  renderGpsHelp();
+  if (!$('gpsHelp').open) $('gpsHelp').showModal();
+}
+document.addEventListener('campo:language', () => { if ($('gpsHelp').open) renderGpsHelp(); });
+$('gpsHelpClose').addEventListener('click', () => $('gpsHelp').close());
+$('gpsManual').addEventListener('click', () => { $('gpsHelp').close(); $('btnManual').click(); });
+$('gpsCheck').addEventListener('click', async () => {
+  const permission = await Ubicacion.permiso();
+  if (permission === 'denied') { $('gpsHelpStatus').textContent = CampoI18n.t('gps.stillBlocked'); return; }
+  $('gpsHelp').close();
+  usarGps($('mapaVista').hidden ? $('btnGpsInicial') : $('btnGps'));
+});
+async function acceptGps(position) {
+  lugarElegido = null;
+  await mostrarMapa(position.lat, position.lon, 17);
+  mensaje('', 'info', 'gpsFound', { meters: Math.round(position.precision) });
+}
+// Where supported, the browser's own control can ask again after a previous denial.
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof window.HTMLGeolocationElement !== 'function') return;
+  const native = document.createElement('geolocation');
+  native.addEventListener('location', async () => {
+    if (!native.position) { $('gpsHelpStatus').textContent = CampoI18n.t('gps.stillBlocked'); return; }
+    const c = native.position.coords;
+    $('gpsHelp').close();
+    try { await acceptGps({ lat: c.latitude, lon: c.longitude, precision: c.accuracy }); }
+    catch { mostrarErrorMapa(); }
+  });
+  $('gpsNative').append(native);
+});
 
 async function usarGps(boton){
   boton.disabled = true;
-  const textoOriginal = boton.innerHTML;
+  $('avisoGps').hidden = true;
   boton.textContent = 'Buscando tu ubicación…';
   try {
     const p = await Ubicacion.obtenerPosicion();
-    mostrarMapa(p.lat, p.lon, 17);
-    mensaje(`Ubicación encontrada (precisión aproximada de ${Math.round(p.precision)} m). Revisa el pin y muévelo si hace falta.`, 'info');
+    await acceptGps(p);
   } catch (e) {
+    if (['PERMISO_NEGADO', 'CONTEXTO_INSEGURO', 'POLITICA_BLOQUEADA'].includes(e.message)) {
+      showGpsHelp(e.message === 'PERMISO_NEGADO' ? 'denied' : e.message === 'CONTEXTO_INSEGURO' ? 'insecure' : 'policy');
+      return;
+    }
     if (!$('mapaVista').hidden) {
       mensaje(MENSAJES_GPS[e.message] || 'No pudimos usar tu GPS. Mueve el mapa a mano.', 'aviso');
     } else {
@@ -184,12 +278,26 @@ async function usarGps(boton){
     }
   } finally {
     boton.disabled = false;
-    boton.innerHTML = textoOriginal;
+    boton.textContent = CampoI18n.text('Usar mi GPS');
   }
 }
 
 $('btnGpsInicial').addEventListener('click', e => usarGps(e.currentTarget));
 $('btnGps').addEventListener('click', e => usarGps(e.currentTarget));
+$('btnManual').addEventListener('click', async () => {
+  lugarElegido = null;
+  const p = Almacen.activa()?.ubicacion;
+  try { await mostrarMapa(centro?.lat ?? p?.lat ?? -9.2, centro?.lon ?? p?.lon ?? -75, centro ? 15 : 5); }
+  catch { mostrarErrorMapa(); return; }
+  mensaje('Acerca el mapa y mueve el pin hasta tu terreno. Luego confirma.', 'info');
+});
+$('formBuscar').addEventListener('submit', e => {
+  e.preventDefault();
+  clearTimeout(temporizadorBusqueda);
+  const consulta = $('buscar').value.trim();
+  if (consulta.length >= 2) buscarLugares(consulta);
+  else { $('buscar').focus(); mostrarSugerencias([]); }
+});
 
 $('buscar').addEventListener('input', () => {
   const texto = $('buscar').value.trim();
@@ -204,6 +312,7 @@ $('buscar').addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   e.preventDefault();
   if (resultadosBusqueda.length) elegirLugar(0);
+  else $('formBuscar').requestSubmit();
 });
 
 $('btnCambiar').addEventListener('click', () => {
@@ -226,22 +335,20 @@ async function altitudSegura(lat, lon, cercana){
 }
 
 async function guardarParcela(){
-  const c = centro;
+  const c = { ...centro };
+  if (!Number.isFinite(c.lat) || !Number.isFinite(c.lon)) throw new Error('UBICACION_INVALIDA');
   mensaje('Estamos guardando los datos de tu parcela. Espera unos segundos…', 'info');
   const cercana = zonaMasCercana(c.lat, c.lon);
-  const alt = await altitudSegura(c.lat, c.lon, cercana);
-  if (!alt) {
-    mensaje('Sin internet no podemos calcular la altura de tu parcela. Intenta cuando tengas señal.', 'aviso');
-    return;
-  }
-
-  const extra = await DatosParcela.completar(c.lat, c.lon);
-  const nombre = extra.lugar || `Parcela ${Almacen.todas().length + 1}`;
+  const [alt, extra] = await Promise.all([
+    altitudSegura(c.lat, c.lon, cercana),
+    DatosParcela.completar(c.lat, c.lon, { signal: AbortSignal.timeout(5000) })
+  ]);
+  const nombre = extra.lugar || lugarElegido || texto('defaultName', { n: Almacen.todas().length + 1 });
   Almacen.nueva({
     nombre,
     ubicacion: { lat: +c.lat.toFixed(5), lon: +c.lon.toFixed(5) },
-    altitud: alt.altitud,
-    origenAltitud: alt.origen,
+    altitud: alt?.altitud ?? null,
+    origenAltitud: alt?.origen ?? 'pendiente',
     zona: cercana && cercana.km <= DISTANCIA_LISTA_KM ? cercana.zona.nombre : null,
     zonaCercana: cercana ? cercana.zona.nombre : null,
     distanciaKm: cercana ? cercana.km : null,
@@ -249,9 +356,10 @@ async function guardarParcela(){
     lugar: extra.lugar,
     suelo: extra.suelo,
     pendientePct: extra.pendientePct,
-    datosFaltantes: extra.faltan,
+    datosFaltantes: [...(!alt ? ['altitud'] : []), ...(extra.suelo.estado !== 'ok' ? ['suelo'] : []), ...(extra.pendientePct == null ? ['pendiente'] : [])],
     consultado: extra.consultado
   });
+  Almacen.borrarBorrador();
 
   location.href = 'conocerte.html';
 }
@@ -262,18 +370,22 @@ $('btnConfirmar').onclick = async () => {
   boton.textContent = 'Guardando…';
   try {
     await guardarParcela();
-  } catch {
-    mensaje('Algo salió mal al guardar. Intenta de nuevo.', 'aviso');
+  } catch (error) {
+    console.error('Parcel save failed', error);
+    mensaje(error.name === 'QuotaExceededError' || error.name === 'SecurityError'
+      ? 'Tu navegador no permite guardar la parcela. Activa el almacenamiento del sitio y vuelve a intentar.'
+      : 'Algo salió mal al guardar. Tu ubicación sigue aquí. Intenta de nuevo.', 'aviso');
   } finally {
     boton.disabled = false;
-    boton.textContent = '✅ Esta es mi parcela';
+    boton.textContent = CampoI18n.text('Esta es mi parcela');
   }
 };
 
 /* ============ inicio ============ */
 
 async function iniciar(){
+  await CampoI18n.ready;
   await cargarZonas();
 }
 
-iniciar();
+document.addEventListener('DOMContentLoaded', iniciar);
