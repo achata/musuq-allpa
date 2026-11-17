@@ -1,18 +1,24 @@
   <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="data/brand/favicon.ico?release=1.0.2" sizes="any">
+<link rel="icon" type="image/png" href="data/brand/favicon-32.png?release=1.0.2" sizes="32x32">
+<link rel="apple-touch-icon" href="data/brand/apple-touch-icon.png?release=1.0.2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});</script>
+<script src="js/core/api.js?release=1.0.2"></script>
+<script src="shared/domain/climate.js?release=1.0.2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#24523a">
 <title>¿Qué siembro? · campo</title>
-<script src="js/almacen.js"></script>
-<script src="js/parcela-datos.js"></script>
-<script src="js/ruta.js"></script>
-<script src="js/ciclo.js"></script>
-<script src="js/motor.js"></script>
-<script src="js/clima.js"></script>
-<script src="js/explica.js"></script>
+<script src="js/almacen.js?release=1.0.2"></script>
+<script src="js/parcela-datos.js?release=1.0.2"></script>
+<script src="js/ruta.js?release=1.0.2"></script>
+<script src="shared/domain/ciclo.js?release=1.0.2"></script>
+<script src="shared/domain/motor.js?release=1.0.2"></script>
+<script src="js/clima.js?release=1.0.2"></script>
+<script src="js/explica.js?release=1.0.2"></script>
 <script>
   if (!Almacen.activa()) location.replace('ubicar-chacra.html');
   else if (!Almacen.perfilActivo()) location.replace('index.html');
@@ -53,6 +59,11 @@
   details ul{margin:8px 0 0; padding-left:22px; line-height:1.5; font-size:16px}
   .volver{font:inherit; font-weight:800; width:100%; min-height:60px; margin-top:14px; border-radius:16px; border:2px solid var(--verde); background:#fff; color:var(--verde); cursor:pointer}
 </style>
+<link rel="stylesheet" href="css/components.css?release=1.0.2">
+<script src="js/core/i18n.js?release=1.0.2" defer></script>
+<script src="js/ui/language-switch.js?release=1.0.2" defer></script>
+<script src="js/ui/screens.js?release=1.0.2" defer></script>
+<script src="js/ui/shell.js?release=1.0.2" defer></script>
 </head>
 <body>
 <main>
@@ -70,10 +81,8 @@ const RIEGO_A_MOTOR = { lluvia:'secano', manguera:'riego', aspersor:'riego', got
 
 const media = a => { const v = a.filter(x => x != null); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
 const lista = m => {
-  const n = (m || []).map(i => MESES_L[i - 1]);
-  if (!n.length) return 'todavía no tenemos fechas';
-  if (n.length === 1) return n[0];
-  return n.slice(0, -1).join(', ') + ' y ' + n[n.length - 1];
+  const n = (m || []).map(CampoI18n.month);
+  return n.length ? n.join(', ') : CampoI18n.text('todavía no tenemos fechas');
 };
 const estrellas = n => '⭐'.repeat(n) + '☆'.repeat(5 - n);
 
@@ -87,19 +96,20 @@ function lineaHTML(c){
     else if (L.crecimiento.includes(m)) clase = 'g';
     return `<div class="c ${clase}"></div>`;
   }).join('');
-  const meses = ABREV.map(a => `<div>${a}</div>`).join('');
+  const meses = Array.from({length:12}, (_, i) => `<div title="${CampoI18n.month(i + 1)}">${CampoI18n.month(i + 1).slice(0,1)}</div>`).join('');
   return `<div class="linea">${celdas}</div><div class="lineaMeses">${meses}</div>`;
 }
 
 function resumenCiclo(c){
   const L = Ciclo.linea(c);
-  if (L.perenne) return `Cosecha todos los años en ${lista(c.cosecha)}. Se siembra una vez.`;
-  return `Siembra en ${lista(L.siembra)}. Cosecha unos ${L.duracion} meses después, en ${lista(L.cosecha)}.`;
+  if (L.perenne) return CampoI18n.t('recommendation.perennial', { months: lista(c.cosecha) });
+  return CampoI18n.t('recommendation.cycle', { sow: lista(L.siembra), n: L.duracion, harvest: lista(L.cosecha) });
 }
 
 function climaDeLaParcela(){
   const c = Clima.leerCache();
-  if (!c || !c.dias || !c.dias.length) return null;
+  const p = Almacen.activa();
+  if (!c || c.lat !== p.ubicacion.lat || c.lon !== p.ubicacion.lon || !c.dias?.length) return null;
   const u = c.dias.slice(-5);
   return {
     tmed: media(u.map(d => d.tmed)),
@@ -109,8 +119,13 @@ function climaDeLaParcela(){
   };
 }
 
+let ultimaRecomendacion;
 function pintar(r, entrada){
+  ultimaRecomendacion = { r, entrada };
   const cont = $('contenido');
+  const parcel = Almacen.activa();
+  const best = r.recomendaciones[0];
+  if (best) Almacen.guardar({ ...parcel, recomendacion: { cultivo: best.id, actualizada: new Date().toISOString() } });
   const avisosHTML = r.advertencias.map(a => `<div class="aviso">${a}</div>`).join('');
   const descartadosHTML = r.descartados.length ? `
     <details>
@@ -155,6 +170,7 @@ function pintar(r, entrada){
       <h3>💡 Un consejo</h3>
       <p class="texto">${t.consejo}</p>
 
+      <a class="campo-cta" href="parcela_neugrac_interactiva.html?id=${encodeURIComponent(parcel.id)}&amp;crop=${encodeURIComponent(p.id)}">🌾 Explorar este cultivo en mi parcela →</a>
       <button class="escuchar" id="btnVoz">🔊 Escuchar</button>
     </div>`;
 
@@ -175,9 +191,8 @@ function pintar(r, entrada){
   if ('speechSynthesis' in window) {
     btn.onclick = () => {
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(
-        `Te recomendamos ${p.nombre}. ${resumenCiclo(p)} ${p.rot}`);
-      u.lang = 'es-PE';
+      const u = new SpeechSynthesisUtterance(document.querySelector('.tarjeta.principal').innerText);
+      u.lang = CampoI18n.t('lang.locale');
       u.rate = 0.85;
       speechSynthesis.speak(u);
     };
@@ -188,6 +203,20 @@ function pintar(r, entrada){
 
 async function iniciar(){
   const p = Almacen.activa();
+  try {
+    const response = await CampoApi.recommend(p);
+    if (response.clima) { try { localStorage.setItem('clima', JSON.stringify(response.clima)); } catch {} }
+    pintar(response.resultado, response.entrada);
+    if (response.warnings?.length) {
+      const notice = document.createElement('p'); notice.className = 'aviso';
+      notice.textContent = 'No hay clima NASA disponible ahora. La evaluación usa tus respuestas y el catálogo; revisa los datos antes de sembrar.';
+      $('contenido').prepend(notice);
+    }
+    return;
+  } catch (error) {
+    if (navigator.onLine) throw error;
+    // Offline compatibility uses the same pure domain engine and explicitly missing data.
+  }
   const perfil = p.perfil;
   const cultivos = await (await fetch('data/cultivos.json')).json();
 
@@ -213,9 +242,10 @@ async function iniciar(){
   pintar(r, entrada);
 }
 
-iniciar().catch(() => {
-  $('contenido').innerHTML = '<div class="aviso">No pudimos preparar tu recomendación. Revisa que la app esté abierta desde Live Server o desde internet.</div>';
-});
+document.addEventListener('campo:language', () => { if (ultimaRecomendacion) pintar(ultimaRecomendacion.r, ultimaRecomendacion.entrada); });
+document.addEventListener('DOMContentLoaded', () => CampoI18n.ready.then(iniciar).catch(() => {
+  $('contenido').innerHTML = '<div class="aviso" role="alert">No pudimos preparar tu recomendación. Revisa tu conexión y vuelve a intentar. <button type="button" onclick="location.reload()">Reintentar</button></div>';
+}));
 </script>
 </body>
 </html>

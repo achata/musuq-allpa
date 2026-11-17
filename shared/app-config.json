@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "1.0",
+  "application": {
+    "name": "musuq",
+    "domain": "musuq.cholotec.dev",
+    "description": "Aplicación agrícola mobile-first con encuesta multiidioma, recomendaciones NASA POWER y parcela interactiva",
+    "architecture": "Clean Architecture: dominio compartido, casos de uso, adaptadores HTTP y presentación Express",
+    "type": "nodejs-monolith-with-static-frontend"
+  },
+  "technologies": {
+    "runtime": {
+      "name": "nodejs",
+      "version": "22",
+      "image": "node:22-alpine"
+    },
+    "packageManager": "npm",
+    "backend": [
+      "Express 5",
+      "cors"
+    ],
+    "frontend": [
+      "HTML5",
+      "CSS3",
+      "JavaScript",
+      "Leaflet 1.9.4 local",
+      "Three.js r128 local"
+    ],
+    "testing": [
+      "node:test",
+      "Playwright"
+    ],
+    "database": null,
+    "persistence": "Parcelas y borradores en localStorage del navegador; caché TTL efímera en memoria por réplica",
+    "buildRequired": true
+  },
+  "commands": {
+    "install": "npm ci",
+    "productionInstall": "npm ci --omit=dev",
+    "development": "npm run dev",
+    "test": "npm test",
+    "start": "npm start",
+    "containerStart": [
+      "node",
+      "server/index.js"
+    ],
+    "dockerBuild": "docker build -t musuq:latest .",
+    "dockerRun": "docker run --rm -p 3000:3000 -e NODE_ENV=production -e CORS_ORIGINS=https://musuq.cholotec.dev musuq:latest",
+    "kubernetesApply": "kubectl apply -f deployment.yaml",
+    "note": "dockerBuild y kubernetesApply son comandos para los manifiestos que genere el consumidor de este JSON.",
+    "build": "npm run build",
+    "e2e": "npm run test:e2e"
+  },
+  "server": {
+    "entrypoint": "server/index.js",
+    "host": "0.0.0.0",
+    "port": 3000,
+    "protocol": "http",
+    "apiPrefix": "/api",
+    "healthEndpoint": "/api/health",
+    "environment": {
+      "NODE_ENV": "production",
+      "HOST": "0.0.0.0",
+      "PORT": "3000",
+      "CORS_ORIGINS": "https://musuq.cholotec.dev"
+    },
+    "secrets": [],
+    "cors": {
+      "origins": [
+        "https://musuq.cholotec.dev"
+      ],
+      "methods": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "allowedHeaders": [
+        "Content-Type"
+      ],
+      "credentials": false
+    }
+  },
+  "docker": {
+    "context": ".",
+    "workingDirectory": "/app",
+    "expose": [
+      3000
+    ],
+    "user": "node",
+    "copy": [
+      "package.json",
+      "package-lock.json",
+      "server/",
+      "shared/domain/",
+      "js/",
+      "css/",
+      "data/",
+      "*.html",
+      "sw.js"
+    ],
+    "exclude": [
+      "node_modules",
+      ".git",
+      ".env",
+      "tests",
+      "tools",
+      "test-results",
+      "playwright-report"
+    ],
+    "volumes": [],
+    "healthcheck": "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+    "build": {
+      "command": "npm run build",
+      "output": "dist",
+      "stageRuntime": "node:22-alpine",
+      "runtimeCopy": "dist/"
+    }
+  },
+  "kubernetes": {
+    "namespace": "musuq",
+    "deploymentName": "musuq",
+    "replicas": 2,
+    "containerPort": 3000,
+    "service": {
+      "type": "ClusterIP",
+      "port": 80,
+      "targetPort": 3000
+    },
+    "ingress": {
+      "host": "musuq.cholotec.dev",
+      "path": "/",
+      "pathType": "Prefix",
+      "tls": true,
+      "tlsSecretName": "musuq-tls",
+      "ingressClassName": "nginx"
+    },
+    "resources": {
+      "requests": {
+        "cpu": "100m",
+        "memory": "128Mi"
+      },
+      "limits": {
+        "cpu": "500m",
+        "memory": "512Mi"
+      }
+    },
+    "readinessProbe": {
+      "httpGet": {
+        "path": "/api/health",
+        "port": 3000
+      },
+      "initialDelaySeconds": 3,
+      "periodSeconds": 10
+    },
+    "livenessProbe": {
+      "httpGet": {
+        "path": "/api/health",
+        "port": 3000
+      },
+      "initialDelaySeconds": 10,
+      "periodSeconds": 20
+    },
+    "terminationGracePeriodSeconds": 15,
+    "persistentVolumeRequired": false,
+    "httpsRequiredForGeolocation": true
+  },
+  "externalServices": [
+    {
+      "name": "NASA POWER",
+      "host": "power.larc.nasa.gov",
+      "port": 443,
+      "apiKeyRequired": false
+    },
+    {
+      "name": "SoilGrids",
+      "host": "rest.isric.org",
+      "port": 443,
+      "apiKeyRequired": false
+    },
+    {
+      "name": "Open-Meteo elevation",
+      "host": "api.open-meteo.com",
+      "port": 443,
+      "apiKeyRequired": false
+    },
+    {
+      "name": "Photon geocoding",
+      "host": "photon.komoot.io",
+      "port": 443,
+      "apiKeyRequired": false
+    },
+    {
+      "name": "Nominatim",
+      "host": "nominatim.openstreetmap.org",
+      "port": 443,
+      "apiKeyRequired": false
+    }
+  ],
+  "browserExternalResources": [
+    "https://*.tile.openstreetmap.org",
+    "https://fonts.googleapis.com",
+    "https://fonts.gstatic.com"
+  ],
+  "deploymentInputs": {
+    "containerImage": "REPLACE_WITH_REGISTRY/musuq:TAG",
+    "tlsSecret": "Create musuq-tls or configure your cluster certificate issuer"
+  }
+}

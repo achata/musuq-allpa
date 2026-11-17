@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="data/brand/favicon.ico?release=1.0.2" sizes="any">
+<link rel="icon" type="image/png" href="data/brand/favicon-32.png?release=1.0.2" sizes="32x32">
+<link rel="apple-touch-icon" href="data/brand/apple-touch-icon.png?release=1.0.2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});</script>
+<script src="js/core/api.js?release=1.0.2"></script>
+<script src="shared/domain/climate.js?release=1.0.2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#24523a">
@@ -8,11 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="campo">
 <title>campo · Cultiva con confianza</title>
-<script src="js/almacen.js"></script>
-<script src="js/ruta.js"></script>
-<script>
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-</script>
+<script src="js/almacen.js?release=1.0.2"></script>
+<script src="js/ruta.js?release=1.0.2"></script>
 <style>
   :root{
     --verde:#24523a; --verde-claro:#e8f0ea; --fondo:#f5f3ee;
@@ -86,12 +89,18 @@
 
   .vacio{background:#fff; border:1px solid var(--borde); border-radius:18px; padding:18px; line-height:1.45; color:var(--gris)}
 </style>
+<link rel="stylesheet" href="css/components.css?release=1.0.2">
+<script src="js/core/i18n.js?release=1.0.2" defer></script>
+<script src="js/ui/language-switch.js?release=1.0.2" defer></script>
+<script src="js/ui/screens.js?release=1.0.2" defer></script>
+<script src="js/ui/shell.js?release=1.0.2" defer></script>
 </head>
 <body>
 
 <div id="splash">
-  <div class="logo">🌿</div>
-  <div class="marca">campo</div>
+  <div class="logo"><img src="data/brand/musuq-allpa.jpg" alt="Musuq Allpa" width="220" height="180"></div>
+  <div class="marca">Musuq Allpa</div>
+  <div class="splash-version">v.1.0.2</div>
   <div class="espera">Preparando tu parcela…</div>
   <div class="giro"></div>
 </div>
@@ -104,17 +113,7 @@
   <p class="sub">Toca una parcela para ver qué sembrar, el clima de hoy y consejos.</p>
 
   <div id="lista"></div>
-  <button class="agregar" id="btnAgregar">➕ Agregar parcela</button>
-
-  <h2>Otras herramientas</h2>
-  <a class="opcion" href="ubicar-chacra.html">
-    <span class="ico">📍</span>
-    <span>
-      <span class="titulo">Buscar mi ubicación</span>
-      <span class="detalle">Usa tu GPS o escribe el nombre de tu localidad</span>
-    </span>
-    <span class="flecha">→</span>
-  </a>
+  <button class="agregar" id="btnAgregar">+ Agregar parcela</button>
 
   <div id="consejo" class="vacio" style="display:none; background:var(--aviso); color:var(--aviso-txt); border:none; margin-top:12px">
     📲 Para no perder tus datos en iPhone, toca el botón Compartir de Safari y elige <strong>Agregar a pantalla de inicio</strong>.
@@ -122,7 +121,7 @@
 </main>
 
 <script>
-const MIN_ESPERA_MS = 1400;
+const MIN_ESPERA_MS = 650;
 const inicio = Date.now();
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
@@ -145,14 +144,14 @@ function pintarLista(){
       ? 'Falta completar'
       : `${esc(p.altitud ?? '--')} metros · ${esc(cultivos || 'Sin cultivos registrados')}`;
     return `
-      <a class="parcela ${p.perfil ? '' : 'incompleta'}" href="parcela.html?id=${encodeURIComponent(p.id)}">
+      <div class="parcela-fila"><a class="parcela ${p.perfil ? '' : 'incompleta'}" href="parcela.html?id=${encodeURIComponent(p.id)}">
         <span class="ico">📍</span>
         <span class="txt">
-          <span class="titulo">${esc(p.nombre)}</span>
+          <span class="titulo" data-user-value>${esc(p.nombre)}</span>
           <span class="detalle">${detalle}</span>
         </span>
         <span class="flecha">→</span>
-      </a>`;
+      </a><button type="button" class="eliminar-parcela" data-eliminar="${esc(p.id)}" aria-label="${esc(CampoI18n.t('parcels.deleteLabel', { name: p.nombre }))}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg><span>Quitar</span></button></div>`;
   }).join('');
 }
 
@@ -161,20 +160,22 @@ document.getElementById('btnAgregar').addEventListener('click', () => {
   location.href = 'ubicar-chacra.html';
 });
 
-window.addEventListener('load', () => {
+document.getElementById('lista').addEventListener('click', e => {
+  const button = e.target.closest('[data-eliminar]');
+  if (!button) return;
+  const parcel = Almacen.todas().find(p => p.id === button.dataset.eliminar);
+  if (parcel && confirm(CampoI18n.t('parcels.confirmDelete', { name: parcel.nombre }))) {
+    Almacen.eliminar(parcel.id);
+    pintarLista();
+  }
+});
+
+document.addEventListener('campo:language', pintarLista);
+window.addEventListener('load', async () => {
+  await CampoI18n.ready;
   const resto = Math.max(0, MIN_ESPERA_MS - (Date.now() - inicio));
   setTimeout(() => {
     const todas = Almacen.todas();
-
-    // Primera visita: sin parcelas, al registro
-    if (!todas.length) { location.replace('ubicar-chacra.html'); return; }
-
-    // Primera visita a medias: si no hay ninguna parcela completa, retoma el registro
-    const hayCompleta = todas.some(p => p.perfil);
-    if (!hayCompleta) {
-      const destino = Ruta.paso();
-      if (destino) { location.replace(destino); return; }
-    }
 
     pintarLista();
     document.getElementById('splash').classList.add('oculto');

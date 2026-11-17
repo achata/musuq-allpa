@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="data/brand/favicon.ico?release=1.0.2" sizes="any">
+<link rel="icon" type="image/png" href="data/brand/favicon-32.png?release=1.0.2" sizes="32x32">
+<link rel="apple-touch-icon" href="data/brand/apple-touch-icon.png?release=1.0.2">
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});</script>
+<script src="js/core/api.js?release=1.0.2"></script>
+<script src="shared/domain/climate.js?release=1.0.2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#24523a">
 <title>¿Qué usas en tu parcela? · campo</title>
-<script src="js/almacen.js"></script>
-<script src="js/ruta.js"></script>
+<script src="js/almacen.js?release=1.0.2"></script>
+<script src="js/ruta.js?release=1.0.2"></script>
 <script>
   const borradorInicial = Almacen.borrador() || {};
   if (!Almacen.activa()) location.replace('ubicar-chacra.html');
@@ -34,6 +40,11 @@
   .siguiente{font:inherit; font-weight:800; min-height:60px; border-radius:16px; border:2px solid var(--verde); background:var(--verde); color:#fff; cursor:pointer; width:100%}
   .siguiente:disabled{opacity:.4}
 </style>
+<link rel="stylesheet" href="css/components.css?release=1.0.2">
+<script src="js/core/i18n.js?release=1.0.2" defer></script>
+<script src="js/ui/language-switch.js?release=1.0.2" defer></script>
+<script src="js/ui/screens.js?release=1.0.2" defer></script>
+<script src="js/ui/shell.js?release=1.0.2" defer></script>
 </head>
 <body>
 <main>
@@ -46,7 +57,7 @@
 <div class="barra">
   <div class="c">
     <button class="siguiente" id="btnSiguiente" disabled>Siguiente →</button>
-    <button class="atras" onclick="history.back()">← Volver</button>
+    <button class="atras" onclick="location.href='riego.html'">← Volver</button>
   </div>
 </div>
 
@@ -80,6 +91,7 @@ document.getElementById('lista').addEventListener('click', e => {
     elegidos.delete('ninguno');
     elegidos.has(id) ? elegidos.delete(id) : elegidos.add(id);
   }
+  Ruta.guardarBorrador({ insumos: [...elegidos] });
   render();
 });
 

@@ -1,0 +1,24 @@
+{
+  "name": "campo",
+  "version": "1.0.2",
+  "private": true,
+  "description": "Asistente agr\u00edcola mobile-first con API Express",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node tests/motor.test.js && node --test tests/server.test.js tests/i18n.test.cjs tests/farm-context.test.cjs",
+    "test:mobile": "playwright test --project=mobile",
+    "build": "node tools/build.cjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
