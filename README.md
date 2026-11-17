@@ -6,7 +6,7 @@ Musuq Allpa ayuda a un agricultor a registrar sus parcelas, responder una encues
 
 **Aplicación publicada:** [musuq.cholotec.dev](https://musuq.cholotec.dev)
 
-## 1. Qué puede evaluar el jurado
+## 1. evaluar
 
 | Capacidad | Comportamiento observable |
 | --- | --- |
@@ -34,7 +34,7 @@ No se requiere una cuenta. Para comprobar el flujo desde cero, usar una ventana 
 6. **Consultar el clima.** Revisar la fecha y los detalles del resumen regional. No interpretar esa fecha como una medición en tiempo real del terreno.
 7. **Verificar móvil y persistencia.** Repetir con un ancho de 320–430 px, cambiar de idioma y recargar la página. Después de la primera carga, probar sin conexión los recursos almacenados.
 
-**Ejemplo de demostración:** una parcela en la sierra de Junín, con cultivo anterior de papa, riego por lluvia y guano. Los resultados dependen de los datos disponibles y del catálogo; no se promete un cultivo ganador fijo.
+**Ejemplo:** una parcela en la sierra de Junín, con cultivo anterior de papa, riego por lluvia y guano. Los resultados dependen de los datos disponibles y del catálogo; no se promete un cultivo ganador fijo.
 
 ## 3. Flujo del usuario
 
